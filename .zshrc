@@ -2,7 +2,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-  export ZSH=/home/aleksandroff/.oh-my-zsh
+  export ZSH=/home/ivan/.oh-my-zsh
 
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
@@ -91,6 +91,17 @@ rgrep()
   grep "${1}" ./ -rn --color
 }
 
+irgrep()
+{
+  grep -i "${1}" ./ -rn --color
+}
+
+replacerecur()
+{
+  find ./ -type f -print0 | xargs -0 sed -i "s/${1}/${2}/g"
+}
+
+
 function extract {
  if [ -z "$1" ]; then
     # display usage if no parameters given
@@ -125,12 +136,13 @@ fi
 
 # NEEDED
 alias tmux='tmux -2' #start with 256 color
-
+alias vun='vim'
+alias les='less'
 
 # Useful aliases
 alias ..='cd ..'
 alias ,,='cd -'
-alias smi='sudo make install'
+alias smi='sudo make install && sudo to64'
 alias sy='sudo yum'
 alias ports='netstat -tulanp'
 alias rm='rm -I --preserve-root'
@@ -158,3 +170,6 @@ alias cpuinfo='lscpu'
  
 ## get GPU ram on desktop / laptop##
 alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
+
+alias maek='make'
+export SSLKEYLOGFILE=~/work/ssl/sslkeylog.log
