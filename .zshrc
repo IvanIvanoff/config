@@ -3,8 +3,11 @@
 
 # Path to your oh-my-zsh installation.
   export ZSH=/home/ivan/.oh-my-zsh
+  export GOPATH=$HOME/go
+  export PATH=$PATH:$GOROOT/bin:$GOPATH/bin:/home/ivan/.asdf/installs/elixir/1.6.4/.mix/escripts
+  PATH=$PATH:~/.cargo/bin
 
-# Set name of the theme to load. Optionally, if you set this to "random"
+ #Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 ZSH_THEME="robbyrussell"
@@ -53,6 +56,8 @@ ZSH_THEME="robbyrussell"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git)
+
+# bash completion compatibility
 
 source $ZSH/oh-my-zsh.sh
 
@@ -173,3 +178,30 @@ alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 
 alias maek='make'
 export SSLKEYLOGFILE=~/work/ssl/sslkeylog.log
+
+alias sanupdate='mix deps.get && cd assets/ && yarn install && cd .. && cd app/ && yarn install && cd ..'
+
+
+. $HOME/.asdf/asdf.sh
+
+. $HOME/.asdf/completions/asdf.bash
+
+alias exformat='git diff master --name-only | grep "ex$\|exs$" | xargs mix format'
+
+
+# Git aliases
+alias gst='git status'
+alias g='git'
+
+# Elixir stuff
+alias ectomigrate='mix ecto.migrate && MIX_ENV=test mix ecto.migrate'
+
+vimgitshow() { git show "$1" | vim - "+set filetype=${1##*.}"; }
+
+
+alias iex='iex --erl "-kernel shell_history enabled"'
+alias mt='mix test'
+mtc()
+{
+  MIX_ENV=test mix coveralls.detail --filter $1
+}
