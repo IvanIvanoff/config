@@ -2,14 +2,11 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-  export ZSH=/home/ivan/.oh-my-zsh
-  export GOPATH=$HOME/go
-  export PATH=$PATH:$GOROOT/bin:$GOPATH/bin:/home/ivan/.asdf/installs/elixir/1.6.4/.mix/escripts
-  PATH=$PATH:~/.cargo/bin
+export ZSH=/home/ivan/.oh-my-zsh
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin:/home/ivan/.asdf/installs/elixir/1.6.4/.mix/escripts
+PATH=$PATH:~/.cargo/bin
 
- #Set name of the theme to load. Optionally, if you set this to "random"
-# it'll load a random theme each time that oh-my-zsh is loaded.
-# See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 ZSH_THEME="robbyrussell"
 #ZSH_THEME="amuse"
 #ZSH_THEME="agnoster"
@@ -18,7 +15,11 @@ HYPHEN_INSENSITIVE="true"
 export UPDATE_ZSH_DAYS=5
 COMPLETION_WAITING_DOTS="true"
 
- HIST_STAMPS="dd/mm/yyyy"
+HIST_STAMPS="dd/mm/yyyy"
+
+local ret_status="%(?:%{$fg_bold[green]%}➜ :%{$fg_bold[red]%}➜ )"
+PROMPT='${ret_status} %{$fg[cyan]%}%c%{$reset_color%} $(git_prompt_info)'
+RPROMPT="[%D{%y/%m/%f}|%*]"
 
 plugins=(git)
 
@@ -128,6 +129,8 @@ vimgitshow() { git show "$1" | vim - "+set filetype=${1##*.}"; }
 alias g='git'
 alias gs='git status'
 alias gcm='git checkout master'
+alias gp='git pull'
+alias gfa='git fetch -a'
 alias exformat='git diff master --name-only | grep "ex$\|exs$" | xargs mix format'
 
 # Elixir stuff
@@ -135,10 +138,17 @@ alias ectomigrate='mix ecto.migrate && MIX_ENV=test mix ecto.migrate'
 alias im='iex --erl "-kernel shell_history enabled" -S mix'
 alias imps='iex --erl "-kernel shell_history enabled" -S mix phx.server'
 alias iex='iex --erl "-kernel shell_history enabled"'
+alias mc='mix compile'
 alias mt='mix test'
+alias mf='mix format'
+alias mdg='mix deps.get'
+
 mtc()
 {
   MIX_ENV=test mix coveralls.detail --filter $1
 }
 
 alias myip='curl ipinfo.io'
+alias cdsan='cd ~/work/sanbase2'
+
+alias did="vim +'normal Go' +'r!date' ~/did/did.txt"
