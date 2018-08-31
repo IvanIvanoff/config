@@ -1,5 +1,5 @@
 # If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
 export ZSH=/home/ivan/.oh-my-zsh
@@ -8,8 +8,6 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin:/home/ivan/.asdf/installs/elixir/1.6.4
 PATH=$PATH:~/.cargo/bin
 
 ZSH_THEME="robbyrussell"
-#ZSH_THEME="amuse"
-#ZSH_THEME="agnoster"
 
 HYPHEN_INSENSITIVE="true"
 export UPDATE_ZSH_DAYS=5
@@ -19,7 +17,7 @@ HIST_STAMPS="dd/mm/yyyy"
 
 local ret_status="%(?:%{$fg_bold[green]%}➜ :%{$fg_bold[red]%}➜ )"
 PROMPT='${ret_status} %{$fg[cyan]%}%c%{$reset_color%} $(git_prompt_info)'
-RPROMPT="[%D{%y/%m/%f}|%*]"
+RPROMPT="[%D{%f/%m/%y}|%*]"
 
 plugins=(git)
 
@@ -140,8 +138,12 @@ alias imps='iex --erl "-kernel shell_history enabled" -S mix phx.server'
 alias iex='iex --erl "-kernel shell_history enabled"'
 alias mc='mix compile'
 alias mt='mix test'
+alias mta='MIX_ENV=test mix test_all'
 alias mf='mix format'
 alias mdg='mix deps.get'
+remote_console(){
+  kubectl exec -it $1 /app/bin/sanbase remote_console
+}
 
 mtc()
 {
@@ -150,5 +152,17 @@ mtc()
 
 alias myip='curl ipinfo.io'
 alias cdsan='cd ~/work/sanbase2'
+alias cddev='cd ~/work/devops'
 
 alias did="vim +'normal Go' +'r!date' ~/did/did.txt"
+
+# kubectl
+alias kgp='kubectl get pods'
+alias kgps='kubectl get pods | grep sanbase'
+alias kgpi='kubectl get pods | grep influxdb'
+alias klf='kubectl logs -f'
+alias klft='kubectl logs -f --tail=100'
+alias klp='kubectl logs -p'
+klftn(){
+kubectl logs -f --tail=200 $1 | sed 's/\\n/\n/g'
+}
