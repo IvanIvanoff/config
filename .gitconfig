@@ -1,0 +1,62 @@
+[user]
+	email = ivan.ivanoff.95@gmail.com
+	name = Ivan Ivanov
+	signingkey = D2D23485
+[core]
+	editor = vim
+[push]
+	default = simple
+[alias]
+  fa = fetch -a
+  b = branch
+  ba = branch -a
+  a = add
+	dad = !curl https://icanhazdadjoke.com && git add
+  s = status
+  c = commit
+  cm = commit -m
+  cam = !sh -c 'git commit --amend --date=\"$(date -R)\"' -
+  co = checkout
+  com = checkout master
+  cob = checkout -b
+  unstage = reset HEAD --
+  undo = reset --soft HEAD^
+  p = pull
+  ps = push
+  pos = push --set-upstream origin
+  last = log -1 HEAD
+  l = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+  lo = log --pretty=oneline
+  # diff
+  d = diff
+  dm = diff master
+  dp = diff --patience
+  dc = diff --cached
+  dk = diff --check
+  dn = diff --name-only
+  rpo = remote prune origin
+[commit]
+  gpgsign = true
+[web]
+  browser = firefox
+[rerere]
+  enabled = 1
+  autoupdate = 1
+[diff]
+  tool = vimdiff
+[color]
+	ui = auto
+[color "branch"]
+	current = yellow bold
+	local = green bold
+	remote = cyan bold
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+[color "status"]
+	added = green bold
+	changed = yellow bold
+	untracked = red bold
