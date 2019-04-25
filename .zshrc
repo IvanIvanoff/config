@@ -2,10 +2,16 @@
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH=/home/ivan/.oh-my-zsh
+export ZSH=/Users/ivan/.oh-my-zsh
 export GOPATH=$HOME/go
-export PATH=$PATH:$GOROOT/bin:$GOPATH/bin:/home/ivan/.asdf/installs/elixir/1.6.4/.mix/escripts
-PATH=$PATH:~/.cargo/bin
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin:/Users/ivan/.asdf/shims/elixir
+export PATH=$PATH:$(go env GOPATH)/bin
+export PATH="$HOME/.jenv/shims:$PATH"
+export PATH=$PATH:~/.cargo/bin
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_192.jdk/Contents/Home
+export OTP_GITHUB_URL=https://github.com/erlang/otp
+
+eval "$(jump shell)"
 
 ZSH_THEME="robbyrussell"
 #ZSH_THEME="amuse"
@@ -59,7 +65,6 @@ alias ,,='cd -'
 alias smi='sudo make install && sudo to64'
 alias sy='sudo yum'
 alias ports='netstat -tulanp'
-alias rm='rm -I --preserve-root'
 alias fhere="find . -name "
 alias mkdir="mkdir -pv"
 
@@ -102,6 +107,7 @@ alias exformat='git diff master --name-only | grep "ex$\|exs$" | xargs mix forma
 
 # Elixir stuff
 alias ectomigrate='mix ecto.migrate && MIX_ENV=test mix ecto.migrate'
+alias iex='iex --erl "-kernel shell_history enabled~"'
 alias im='iex --erl "-kernel shell_history enabled" -S mix'
 alias imps='iex --erl "-kernel shell_history enabled" -S mix phx.server'
 alias iex='iex --erl "-kernel shell_history enabled"'
@@ -114,9 +120,13 @@ remote_console(){
   kubectl exec -it $1 /app/bin/sanbase remote_console
 }
 
+kubelogs() {
+  kubectl logs -f $1 > $2
+}
+
 mtc()
 {
-  MIX_ENV=test mix coveralls.detail --filter $1
+  MIX_ENV=test mix coveralls.html
 }
 
 alias myip='curl ipinfo.io'
@@ -127,11 +137,23 @@ alias did="vim +'normal Go' +'r!date' ~/did/did.txt"
 
 # kubectl
 alias kgp='kubectl get pods'
-alias kgps='kubectl get pods | grep sanbase'
-alias kgpi='kubectl get pods | grep influxdb'
+alias kgps='kubectl get pods | rg sanbase'
+alias kgpi='kubectl get pods | rg influxdb'
 alias klf='kubectl logs -f'
 alias klft='kubectl logs -f --tail=100'
 alias klp='kubectl logs -p'
 klftn(){
-kubectl logs -f --tail=200 $1 | sed 's/\\n/\n/g'
+ kubectl logs -f --tail=1000 $1 | gsed 's/\\n/\n/g'
 }
+export PATH="/usr/local/opt/openssl/bin:$PATH"
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+who_listens()
+{
+  lsof -nP -i4TCP:$1 | grep LISTEN
+}
+
+alias ls='exa'
+alias ll='exa -lh --git'
+alias llt='exa -lhTL2 --git'
