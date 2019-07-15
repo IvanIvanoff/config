@@ -14,8 +14,6 @@ export OTP_GITHUB_URL=https://github.com/erlang/otp
 eval "$(jump shell)"
 
 ZSH_THEME="robbyrussell"
-#ZSH_THEME="amuse"
-#ZSH_THEME="agnoster"
 
 HYPHEN_INSENSITIVE="true"
 export UPDATE_ZSH_DAYS=5
@@ -31,6 +29,7 @@ plugins=(git)
 
 # bash completion compatibility
 source $ZSH/oh-my-zsh.sh
+#source ~/.mix_autocomplete.zsh
 
 export LANG=en_US.UTF-8
 
@@ -102,6 +101,7 @@ alias g='git'
 alias gs='git status'
 alias gcm='git checkout master'
 alias gp='git pull'
+alias gpp='git pull --prune'
 alias gfa='git fetch -a'
 alias exformat='git diff master --name-only | grep "ex$\|exs$" | xargs mix format'
 
@@ -157,3 +157,9 @@ who_listens()
 alias ls='exa'
 alias ll='exa -lh --git'
 alias llt='exa -lhTL2 --git'
+alias rfzf='rg --files | fzf'
+
+# Hack to allow watching aliases. For example now 'watch ll' will work with the above ll alias
+alias watch='watch '
+alias kgpsw='watch "kubectl get pod | rg sanbase"'
+
