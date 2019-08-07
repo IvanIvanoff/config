@@ -27,6 +27,9 @@
   pos = push --set-upstream origin
   last = log -1 HEAD
   l = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+  lf = log --stat --graph --pretty=oneline --abbrev-commit --date=relative
+  today = log --stat --since='1 Day Ago' --graph --pretty=oneline --abbrev-commit --date=relative
+  this-week = log --stat --since='7 Days Ago' --graph --pretty=oneline --abbrev-commit --date=relative
   lo = log --pretty=oneline
   # diff
   d = diff
@@ -61,8 +64,5 @@
 	added = green bold
 	changed = yellow bold
 	untracked = red bold
-[filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
+[help]
+  autocorrect = 1
