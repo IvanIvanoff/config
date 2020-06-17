@@ -39,6 +39,8 @@
   dk = diff --check
   dn = diff --name-only
   rpo = remote prune origin
+  pr = pull-request
+  rmg = remove-merged 
 [commit]
   gpgsign = true
 [web]
