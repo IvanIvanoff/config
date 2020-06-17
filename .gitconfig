@@ -1,10 +1,10 @@
 [user]
-	email = ivan.ivanoff.95@gmail.com
-	name = Ivan Ivanov
-	signingkey = D2D23485
+  email = ivan.ivanoff.95@gmail.com
+  name = Ivan Ivanov
+  signingkey = D2D23485
 [core]
-	editor = vim
-	excludesfile = /Users/ivan/.gitignore_global
+  editor = vim
+  excludesfile = /Users/ivan/.gitignore_global
 [push]
 	default = simple
 [alias]
@@ -12,7 +12,8 @@
   b = branch
   ba = branch -a
   a = add
-	dad = !curl https://icanhazdadjoke.com && git add
+  # mistyped add as dad, print dad joke
+  dad = !curl https://icanhazdadjoke.com && git add
   s = status
   c = commit
   cm = commit -m
@@ -51,20 +52,20 @@
 [diff]
   tool = vimdiff
 [color]
-	ui = auto
+  ui = auto
 [color "branch"]
-	current = yellow bold
-	local = green bold
-	remote = cyan bold
+  current = yellow bold
+  local = green bold
+  remote = cyan bold
 [color "diff"]
-	meta = yellow bold
-	frag = magenta bold
-	old = red bold
-	new = green bold
-	whitespace = red reverse
+  meta = yellow bold
+  frag = magenta bold
+  old = red bold
+  new = green bold
+  whitespace = red reverse
 [color "status"]
-	added = green bold
-	changed = yellow bold
-	untracked = red bold
+  added = green bold
+  changed = yellow bold
+  untracked = red bold
 [help]
   autocorrect = 1
