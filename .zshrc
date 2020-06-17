@@ -2,14 +2,19 @@
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
+export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"
+export PSQL_DIR=/usr/local/opt/postgresql@11/bin
 export ZSH=/Users/ivan/.oh-my-zsh
 export GOPATH=$HOME/go
 export PATH=$PATH:$GOROOT/bin:$GOPATH/bin:/Users/ivan/.asdf/shims/elixir
 export PATH=$PATH:$(go env GOPATH)/bin
-export PATH="$HOME/.jenv/shims:$PATH"
+export PATH=$HOME/.jenv/shims:$PATH
 export PATH=$PATH:~/.cargo/bin
+export PATH=$PATH:/Users/ivan/.ghcup/env
+export PATH=$PATH:$PSQL_DIR
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_192.jdk/Contents/Home
 export OTP_GITHUB_URL=https://github.com/erlang/otp
+export PATH="/usr/local/opt/openssl/bin:$PATH"
 
 eval "$(jump shell)"
 
@@ -69,18 +74,18 @@ alias mkdir="mkdir -pv"
 
 
 alias meminfo='free -m -l -t'
- 
+
 ## get top process eating memory
 alias psmem='ps auxf | sort -nr -k 4'
 alias psmem10='ps auxf | sort -nr -k 4 | head -10'
- 
+
 ## get top process eating cpu ##
 alias pscpu='ps auxf | sort -nr -k 3'
 alias pscpu10='ps auxf | sort -nr -k 3 | head -10'
- 
+
 ## Get server cpu info ##
 alias cpuinfo='lscpu'
- 
+
 ## get GPU ram on desktop / laptop##
 alias gpumeminfo='grep -i --color memory /var/log/Xorg.0.log'
 
@@ -113,9 +118,11 @@ alias imps='iex --erl "-kernel shell_history enabled" -S mix phx.server'
 alias iex='iex --erl "-kernel shell_history enabled"'
 alias mc='mix compile'
 alias mt='mix test'
-alias mta='MIX_ENV=test mix test_all'
+alias mta='MIX_ENV=test mix test_all --formatter Sanbase.FailedTestFormatter --formatter ExUnit.CLIFormatter'
 alias mf='mix format'
 alias mdg='mix deps.get'
+alias prodkubectl='kubectl --kubeconfig /Users/ivan/.kube/prod-config'
+
 remote_console(){
   kubectl exec -it $1 /app/bin/sanbase remote_console
 }
@@ -130,22 +137,20 @@ mtc()
 }
 
 alias myip='curl ipinfo.io'
-alias cdsan='cd ~/work/sanbase2'
-alias cddev='cd ~/work/devops'
 
 alias did="vim +'normal Go' +'r!date' ~/did/did.txt"
 
 # kubectl
 alias kgp='kubectl get pods'
 alias kgps='kubectl get pods | rg sanbase'
+alias kgpc="kubectl get pods | rg -e 'clickhouse-[012]'"
 alias kgpi='kubectl get pods | rg influxdb'
 alias klf='kubectl logs -f'
 alias klft='kubectl logs -f --tail=100'
 alias klp='kubectl logs -p'
 klftn(){
- kubectl logs -f --tail=1000 $1 | gsed 's/\\n/\n/g'
+ kubectl logs -f --tail=5000 $1 | gsed 's/\\n/\n/g'
 }
-export PATH="/usr/local/opt/openssl/bin:$PATH"
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
@@ -162,4 +167,3 @@ alias rfzf='rg --files | fzf'
 # Hack to allow watching aliases. For example now 'watch ll' will work with the above ll alias
 alias watch='watch '
 alias kgpsw='watch "kubectl get pod | rg sanbase"'
-
