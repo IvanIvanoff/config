@@ -52,7 +52,7 @@
   pr = pull-request
   rmg = remove-merged 
 [commit]
-	gpgsign = false
+	gpgsign = true
 [web]
   browser = firefox
 [rerere]
