@@ -6,6 +6,7 @@ vim.filetype.add({
     env = 'sh',
     dev = 'sh',
     prod = 'sh',
-    Jenkinsfile = 'groovy'
+    Jenkinsfile = 'groovy',
+    livemd = 'elixir'
   }
 })

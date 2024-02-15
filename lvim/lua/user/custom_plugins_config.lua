@@ -1,5 +1,4 @@
 lvim.builtin.telescope.defaults.layout_config.width = 0.75
-
 require('nvim-ts-autotag').setup({
   filetypes = {
     'html', 'javascript', 'typescript', 'javascriptreact', 'typescriptreact', 'svelte', 'vue', 'tsx', 'jsx',
@@ -36,14 +35,6 @@ require("lvim.lsp.manager").setup("cssls", {
     },
   },
 })
-
-local lsp_flags = {
-  debounce_text_changes = 150,
-}
-
-
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
 
 -- local lspconfig = require("lspconfig")

@@ -16,9 +16,10 @@
   default = simple
 [alias]
   fa = fetch -a
-  b = branch
+  b = branch --column
   ba = branch -a
   a = add
+  pf = push --force-with-lease
   # mistyped add as dad, print dad joke
   dad = !curl https://icanhazdadjoke.com && git add
   s = status
@@ -51,7 +52,7 @@
   pr = pull-request
   rmg = remove-merged 
 [commit]
-	gpgsign = true
+	gpgsign = false
 [web]
   browser = firefox
 [rerere]
@@ -78,4 +79,8 @@
 [help]
   autocorrect = 1
 [gpg]
-  program = gpg
+	program = gpg
+[branch]
+	sort = -committerdate
+[maintenance]
+	repo = /Users/ivanivanov/work/sanbase2

@@ -1,4 +1,5 @@
 reload("user.options")
+reload("user.linters")
 reload("user.mappings")
 reload("user.formatting")
 reload("user.foldings")

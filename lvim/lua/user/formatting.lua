@@ -1,6 +1,6 @@
 -- formatting
 lvim.format_on_save.enabled = true
-lvim.format_on_save.pattern = { "*.lua", "*.py", "*.ex", "*.exs", "*.heex", "*.js" }
+lvim.format_on_save.pattern = { "*.lua", "*.py", "*.ex", "*.exs", "*.heex", "*.js", "*.json" }
 
 -- colorize
 lvim.builtin.cmp.formatting = {

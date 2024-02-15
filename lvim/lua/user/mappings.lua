@@ -2,6 +2,9 @@
 vim.keymap.set("i", "jk", "<Esc>")
 vim.keymap.set("i", "jj", "<Esc>")
 
+-- break line at the cursor
+vim.keymap.set("n", "br", "i<CR><Esc>")
+
 
 -- restore the session for the current directory
 vim.api.nvim_set_keymap("n", "<leader>qs", [[<cmd>lua require("persistence").load()<cr>]], {})
@@ -26,8 +29,10 @@ lvim.keys.normal_mode["<leader>f"] = {}
 
 lvim.builtin.which_key.mappings["f"] = {
   name = "Find",
-  f = { "<cmd>Telescope find_files<CR>", "Find Files" },
+  f = { "<cmd>Telescope git_files<CR>", "Git Files" },
+  t = { "<cmd>Telescope find_files<CR>", "Find Files" },
   g = { "<cmd>Telescope live_grep<CR>", "Live Grep" },
+  v = { "<cmd>Telescope grep_string<CR>", "Grep String under cursor or visual selection" },
   p = { "<cmd>Telescope projects<CR>", "Projects" },
   b = { "<cmd>Telescope buffers<CR>", "Buffers" },
   h = { "<cmd>Telescope help_tags<CR>", "Help Tags" },
