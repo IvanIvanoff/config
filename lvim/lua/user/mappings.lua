@@ -3,7 +3,7 @@ vim.keymap.set("i", "jk", "<Esc>")
 vim.keymap.set("i", "jj", "<Esc>")
 
 -- break line at the cursor
-vim.keymap.set("n", "br", "i<CR><Esc>")
+-- vim.keymap.set("n", "br", "i<CR><Esc>")
 
 
 -- restore the session for the current directory
