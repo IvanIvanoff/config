@@ -2,9 +2,21 @@
 vim.keymap.set("i", "jk", "<Esc>")
 vim.keymap.set("i", "jj", "<Esc>")
 
+
+-- Copy the file's relative path to the clipboard
+-- vim.api.nvim_add_user_command("CopyRelPath",
+--   function() vim.api.nvim_call_function("setreg", { "+", vim.fn.fnamemodify(vim.fn.expand("%"), ":.") }) end, {})
+
+
+-- vim.api.nvim_add_user_command("CopyRelPath", "call setreg('+', expand('%'))", {})
+
 -- break line at the cursor
 -- vim.keymap.set("n", "br", "i<CR><Esc>")
 
+-- add gt and gT to go to previous/next tab inside lvim
+-- requires the bufferline plugin
+lvim.keys.normal_mode["gt"] = ":BufferLineCycleNext<CR>"
+lvim.keys.normal_mode["gT"] = ":BufferLineCyclePrev<CR>"
 
 -- restore the session for the current directory
 vim.api.nvim_set_keymap("n", "<leader>qs", [[<cmd>lua require("persistence").load()<cr>]], {})
