@@ -51,6 +51,9 @@
   rpo = remote prune origin
   pr = pull-request
   rmg = remove-merged 
+  # next 2 are taken from rado stankov
+  remove-merged = !git branch --format '%(refname:short) %(upstream:track)' | awk '$2 == \"[gone]\" { print $1 }' | xargs -r git branch -D
+  sync = !git switch `git remote show origin | sed -n '/HEAD branch/s/.*: //p'` && git pull --prune && git delete-merged
 [commit]
 	gpgsign = true
 [web]

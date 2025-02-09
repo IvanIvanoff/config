@@ -1,81 +1,86 @@
 lvim.plugins = {
   {
     "neovim/nvim-lspconfig",
-    dependencies = {
-      {
-        -- Remapped to <leader>fn, which opens the navbuddy window.
-        -- The icons are listed as there were missing intervals after some icons
-        "SmiteshP/nvim-navbuddy",
-        dependencies = {
-          "SmiteshP/nvim-navic",
-          "MunifTanjim/nui.nvim"
-        },
-        opts = {
-          lsp = { auto_attach = true },
-          icons = {
-            File          = "󰈙 ",
-            Module        = " ",
-            Namespace     = "󰌗 ",
-            Package       = " ",
-            Class         = "󰌗 ",
-            Method        = "󰆧 ",
-            Property      = " ",
-            Field         = " ",
-            Constructor   = " ",
-            Enum          = "󰉻 ",
-            Interface     = "󰕘 ",
-            Function      = "󰊕 ",
-            Variable      = "󰫧 ",
-            Constant      = "󰏿 ",
-            String        = " ",
-            Number        = "󰎠 ",
-            Boolean       = "󰊾 ",
-            Array         = "󰅪 ",
-            Object        = "󰅩 ",
-            Key           = "󰌋 ",
-            Null          = "󰟢 ",
-            EnumMember    = " ",
-            Struct        = "󰌗 ",
-            Event         = " ",
-            Operator      = "󰆕 ",
-            TypeParameter = "󰊄 ",
-          },
+    -- Failed to run `config` for
+    -- nvim-navbuddy ...e/pack/lazy/opt/nvim-navbuddy/lua/nvim-navbuddy/init.lua:419: attempt to call field 'get_clients' (a nil value)
+    -- dependencies = {
+    --   {
+    --     -- Remapped to <leader>fn, which opens the navbuddy window.
+    --     -- The icons are listed as there were missing intervals after some icons
+    --     "SmiteshP/nvim-navbuddy",
+    --     dependencies = {
+    --       "SmiteshP/nvim-navic",
+    --       "MunifTanjim/nui.nvim"
+    --     },
+    --     opts = {
+    --       lsp = { auto_attach = true },
+    --       icons = {
+    --         File          = "󰈙 ",
+    --         Module        = " ",
+    --         Namespace     = "󰌗 ",
+    --         Package       = " ",
+    --         Class         = "󰌗 ",
+    --         Method        = "󰆧 ",
+    --         Property      = " ",
+    --         Field         = " ",
+    --         Constructor   = " ",
+    --         Enum          = "󰉻 ",
+    --         Interface     = "󰕘 ",
+    --         Function      = "󰊕 ",
+    --         Variable      = "󰫧 ",
+    --         Constant      = "󰏿 ",
+    --         String        = " ",
+    --         Number        = "󰎠 ",
+    --         Boolean       = "󰊾 ",
+    --         Array         = "󰅪 ",
+    --         Object        = "󰅩 ",
+    --         Key           = "󰌋 ",
+    --         Null          = "󰟢 ",
+    --         EnumMember    = " ",
+    --         Struct        = "󰌗 ",
+    --         Event         = " ",
+    --         Operator      = "󰆕 ",
+    --         TypeParameter = "󰊄 ",
+    --       },
 
-        }
-      }
-    },
+    --     }
+    --   }
+    -- },
     servers = {
       tailwindcss = {
         filetypes_include = { "ex", "exs", "heex" }
       }
     },
   },
+  -- {
+  --   "romgrk/nvim-treesitter-context",
+  --   config = function()
+  --     require("treesitter-context").setup {
+  --       enable = true,   -- Enable this plugin (Can be enabled/disabled later via commands)
+  --       throttle = true, -- Throttles plugin updates (may improve performance)
+  --       max_lines = 0,   -- How many lines the window should span. Values <= 0 mean no limit.
+  --       patterns = {     -- Match patterns for TS nodes. These get wrapped to match at word boundaries.
+  --         default = {
+  --           'class',
+  --           'function',
+  --           'method',
+  --         },
+  --         elixir = {
+  --           "anonymous_function",
+  --           "arguments",
+  --           "block",
+  --           "do_block",
+  --           "list",
+  --           "map",
+  --           "tuple",
+  --           "quoted_content",
+  --         }
+  --       },
+  --     }
+  --   end
+  -- },
   {
-    "romgrk/nvim-treesitter-context",
-    config = function()
-      require("treesitter-context").setup {
-        enable = true,   -- Enable this plugin (Can be enabled/disabled later via commands)
-        throttle = true, -- Throttles plugin updates (may improve performance)
-        max_lines = 0,   -- How many lines the window should span. Values <= 0 mean no limit.
-        patterns = {     -- Match patterns for TS nodes. These get wrapped to match at word boundaries.
-          default = {
-            'class',
-            'function',
-            'method',
-          },
-          elixir = {
-            "anonymous_function",
-            "arguments",
-            "block",
-            "do_block",
-            "list",
-            "map",
-            "tuple",
-            "quoted_content",
-          }
-        },
-      }
-    end
+    "nvim-treesitter/nvim-treesitter-textobjects"
   },
   {
     "roobert/tailwindcss-colorizer-cmp.nvim",
@@ -86,13 +91,20 @@ lvim.plugins = {
       })
     end
   },
-  {
-    -- autoclose and autorename html tag
-    "windwp/nvim-ts-autotag",
-    config = function()
-      require("nvim-ts-autotag").setup()
-    end,
-  },
+  -- {
+  --   -- autoclose and autorename html tag
+  --   "windwp/nvim-ts-autotag",
+  --   config = function()
+  --     require("nvim-ts-autotag").setup()
+  --   end,
+  -- },
+  -- {
+  --   -- better % jumps
+  --   "andymass/vim-matchup",
+  --   setup = function()
+  --     vim.g.matchup_matchparen_offscreen = { method = "popup" }
+  --   end,
+  -- },
   {
     "smoka7/multicursors.nvim",
     event = "VeryLazy",
@@ -163,25 +175,25 @@ lvim.plugins = {
       { "SmiteshP/nvim-navic" },
     },
   },
-  {
-    "tpope/vim-fugitive",
-    cmd = {
-      "G",
-      "Git",
-      "Gdiffsplit",
-      "Gread",
-      "Gwrite",
-      "Ggrep",
-      "GMove",
-      "GDelete",
-      "GBrowse",
-      "GRemove",
-      "GRename",
-      "Glgrep",
-      "Gedit"
-    },
-    ft = { "fugitive" }
-  },
+  -- {
+  --   "tpope/vim-fugitive",
+  --   cmd = {
+  --     "G",
+  --     "Git",
+  --     "Gdiffsplit",
+  --     "Gread",
+  --     "Gwrite",
+  --     "Ggrep",
+  --     "GMove",
+  --     "GDelete",
+  --     "GBrowse",
+  --     "GRemove",
+  --     "GRename",
+  --     "Glgrep",
+  --     "Gedit"
+  --   },
+  --   ft = { "fugitive" }
+  -- },
   {
     -- Remapped to <leader>ql to load last session
     "folke/persistence.nvim",
@@ -202,36 +214,36 @@ lvim.plugins = {
       require('neoscroll').setup {}
     end
   },
-  {
-    "folke/trouble.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
-    }
-  },
-  {
-    -- peek the line when using :{number} before hitting enter
-    "nacro90/numb.nvim",
-    event = "BufRead",
-    config = function()
-      require("numb").setup {
-        show_numbers = true,    -- Enable 'number' for the window while peeking
-        show_cursorline = true, -- Enable 'cursorline' for the window while peeking
-      }
-    end,
-  },
-  {
-    'wfxr/minimap.vim',
-    build = "cargo install --locked code-minimap",
-    -- cmd = {"Minimap", "MinimapClose", "MinimapToggle", "MinimapRefresh", "MinimapUpdateHighlight"},
-    config = function()
-      vim.cmd("let g:minimap_width = 10")
-      vim.cmd("let g:minimap_auto_start = 1")
-      vim.cmd("let g:minimap_auto_start_win_enter = 1")
-    end,
-  },
+  -- {
+  --   "folke/trouble.nvim",
+  --   dependencies = { "nvim-tree/nvim-web-devicons" },
+  --   opts = {
+  --     -- your configuration comes here
+  --     -- or leave it empty to use the default settings
+  --     -- refer to the configuration section below
+  --   }
+  -- },
+  -- {
+  --   -- peek the line when using :{number} before hitting enter
+  --   "nacro90/numb.nvim",
+  --   event = "BufRead",
+  --   config = function()
+  --     require("numb").setup {
+  --       show_numbers = true,    -- Enable 'number' for the window while peeking
+  --       show_cursorline = true, -- Enable 'cursorline' for the window while peeking
+  --     }
+  --   end,
+  -- },
+  -- {
+  --   'wfxr/minimap.vim',
+  --   build = "cargo install --locked code-minimap",
+  --   -- cmd = {"Minimap", "MinimapClose", "MinimapToggle", "MinimapRefresh", "MinimapUpdateHighlight"},
+  --   config = function()
+  --     vim.cmd("let g:minimap_width = 10")
+  --     vim.cmd("let g:minimap_auto_start = 1")
+  --     vim.cmd("let g:minimap_auto_start_win_enter = 1")
+  --   end,
+  -- },
   {
     "zbirenbaum/copilot-cmp",
     event = "InsertEnter",
@@ -272,15 +284,15 @@ lvim.plugins = {
       }
     end
   },
-  {
-    -- color schemes
-    "catppuccin/nvim",
-    name = "catppuccin",
-    priority = 1000
-  },
+  -- {
+  --   -- color schemes
+  --   "catppuccin/nvim",
+  --   name = "catppuccin",
+  --   priority = 1000
+  -- },
   {
     -- rainbow parentheses
-    "mrjones2014/nvim-ts-rainbow",
+    "HiPhish/rainbow-delimiters.nvim",
   },
   -- {
   --   -- hint when you type
@@ -288,9 +300,9 @@ lvim.plugins = {
   --   event = "BufRead",
   --   config = function() require "lsp_signature".on_attach() end,
   -- },
-  {
-    -- open a url with gx
-    "felipec/vim-sanegx",
-    event = "BufRead",
-  },
+  -- {
+  --   -- open a url with gx
+  --   "felipec/vim-sanegx",
+  --   event = "BufRead",
+  -- },
 }
