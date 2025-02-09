@@ -16,7 +16,6 @@ export PATH=/opt/homebrew/opt/postgresql@15/bin:$PATH
 export CLICOLOR=1
 export TERM=xterm-256color
 
-
 eval "$(jump shell)"
 autoload -Uz compinit && compinit -i
 

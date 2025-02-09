@@ -1,18 +1,17 @@
 local lspconfig = require("lspconfig")
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 
-require('nvim-ts-autotag').setup({
-  filetypes = {
-    'html', 'javascript', 'typescript', 'javascriptreact', 'typescriptreact', 'svelte', 'vue', 'tsx', 'jsx',
-    'heex', 'ex', 'exs', 'eex',
-    'rescript',
-    'xml',
-    'markdown',
-    'astro', 'glimmer', 'handlebars', 'hbs' }
-})
+-- require('nvim-ts-autotag').setup({
+--   filetypes = {
+--     'html', 'javascript', 'typescript', 'javascriptreact', 'typescriptreact', 'svelte', 'vue', 'tsx', 'jsx',
+--     'heex', 'ex', 'exs', 'eex',
+--     'rescript',
+--     'xml',
+--     'markdown',
+--     'astro', 'glimmer', 'handlebars', 'hbs' }
+-- })
 
 require("lvim.lsp.manager").setup("tailwindcss")
-require("lvim.lsp.manager").setup("html")
 
 -- Otherwise in app.css I see a lot of errors for @apply
 require("lvim.lsp.manager").setup("cssls", {
@@ -40,8 +39,8 @@ require("lvim.lsp.manager").setup("cssls", {
 
 lspconfig.html.setup {
   capabilities = capabilities,
+  provideFormatter = true,
   settings = {
-    -- Otherwise I get "Cannot read property of null"
     css = {
       lint = {
         validProperties = {},
@@ -53,7 +52,6 @@ lspconfig.html.setup {
       },
     }
   },
-
 }
 
 lspconfig.tailwindcss.setup({
@@ -81,3 +79,31 @@ lspconfig.emmet_ls.setup({
   capabilities = capabilities,
   filetypes = { "html", "css", "elixir", "eelixir", "heex" },
 })
+
+-- This module contains a number of default definitions
+local rainbow_delimiters = require 'rainbow-delimiters'
+
+-- @type rainbow_delimiters.config
+vim.g.rainbow_delimiters = {
+  strategy = {
+    [''] = rainbow_delimiters.strategy['global'],
+    vim = rainbow_delimiters.strategy['local'],
+  },
+  query = {
+    [''] = 'rainbow-delimiters',
+    lua = 'rainbow-blocks',
+  },
+  priority = {
+    [''] = 110,
+    lua = 210,
+  },
+  highlight = {
+    'RainbowDelimiterRed',
+    'RainbowDelimiterYellow',
+    'RainbowDelimiterBlue',
+    'RainbowDelimiterOrange',
+    'RainbowDelimiterGreen',
+    'RainbowDelimiterViolet',
+    'RainbowDelimiterCyan',
+  },
+}
