@@ -1,8 +1,10 @@
 DEFAULT_USER="ivanivanov"
 ZSH_THEME="robbyrussell"
-plugins=(cp mix git macos)
+# to enable history-search-multi-work
+# git clone git@github.com:zdharma-continuum/history-search-multi-word.git ~/.oh-my-zsh/plugins
+plugins=(cp mix git macos history-search-multi-word)
 
-alias vim=lvim
+alias vim=nvim
 
 export ZSH="$HOME/.oh-my-zsh"
 export EDITOR="lvim"
@@ -10,6 +12,10 @@ export LANG="en_US.UTF-8"
 export UPDATE_ZSH_DAYS=5
 export PATH=$HOME/.local/bin:$PATH
 export PATH=$HOME/.cargo/bin:$PATH
+export PATH=/opt/homebrew/opt/postgresql@15/bin:$PATH
+export CLICOLOR=1
+export TERM=xterm-256color
+
 
 eval "$(jump shell)"
 autoload -Uz compinit && compinit -i
@@ -48,6 +54,7 @@ alias chfp='docker run -it --rm --network host yandex/clickhouse-client:${CH_VER
 alias g='git'
 alias gs='git status'
 alias gcm='git checkout master'
+alias gcmn='git checkout main'
 alias gp='git pull'
 alias gpp='git pull --prune'
 alias gfa='git fetch -a'
@@ -57,7 +64,9 @@ alias exformat='git diff master --name-only | grep "ex$\|exs$" | xargs mix forma
 alias mtdb='MIX_ENV=test mix do ecto.drop, ecto.create, ecto.load'
 alias iex='iex --erl "-kernel shell_history enabled~"'
 alias im='iex --erl "-kernel shell_history enabled" -S mix'
-alias imps='iex --cookie mycookie --sname sanbase --erl "-kernel shell_history enabled" -S mix phx.server'
+alias lb_imps='export PORT=4000  && iex --cookie mycookie --sname sanbase  --erl "-kernel shell_history enabled" -S mix phx.server'
+alias imps='export PORT=4000  && iex --cookie mycookie --name sanbase  --erl "-kernel shell_history enabled" -S mix phx.server'
+alias imps2='export PORT=4001 && iex --cookie mycookie --name sanbase2 --erl "-kernel shell_history enabled" -S mix phx.server'
 alias impsn='iex --cookie mycookie --erl "-kernel shell_history enabled" -S mix phx.server'
 alias iex='iex --erl "-kernel shell_history enabled"'
 alias mc='mix compile'
@@ -105,9 +114,9 @@ kubelogs() {
   kubectl logs -f $1 > $2
 }
 
-alias ls='exa'
-alias ll='exa -lh --git'
-alias llt='exa -lhTL2 --git'
+alias ls='eza'
+alias ll='eza -lh --git'
+alias llt='eza -lhTL2 --git'
 alias rfzf='rg --files | fzf'
 alias rfzfc='rg --files | fzf | pbcopy'
 
@@ -118,3 +127,11 @@ alias kgpsw='watch "kubectl get pod | rg sanbase"'
 export GPG_TTY=$(tty)
 
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# pnpm
+export PNPM_HOME="/Users/ivanivanov/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
