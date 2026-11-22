@@ -40,6 +40,18 @@ zstyle ':completion:*' use-cache on
 zstyle ':completion:*' menu select
 zstyle ':completion:*' file-sort modification
 
+# History: keep a lot, and record when each command started and how long it ran.
+# `hist` shows the last 30 with date, time and duration; `hist 100` shows more.
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=250000                 # in memory; must exceed SAVEHIST so HIST_EXPIRE_DUPS_FIRST has room
+SAVEHIST=200000                 # on disk
+setopt EXTENDED_HISTORY         # save ": <start>:<duration>;<command>"
+unsetopt SHARE_HISTORY INC_APPEND_HISTORY   # both write entries before they finish (duration 0)
+setopt INC_APPEND_HISTORY_TIME  # write each entry right after it finishes, with its real duration
+setopt HIST_IGNORE_SPACE        # a command starting with a space is not saved
+setopt HIST_REDUCE_BLANKS
+hist() { fc -liD -"${1:-30}"; }
+
 alias claude_no_sandbox='claude --settings "{\"sandbox\":{\"enabled\":false}}"'
 
 alias wsc='wt switch --create --execute=claude'
