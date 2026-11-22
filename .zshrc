@@ -18,6 +18,10 @@ export PATH="/Users/ivanivanov/.asdf/installs/nodejs/24.10.0/bin:$PATH"
 export CLICOLOR=1
 export TERM=xterm-256color
 
+# Erlang asdf/kerl install opts
+export KERL_BUILD_DOCS=yes
+export KERL_CONFIGURE_OPTIONS="--without-javac --with-ssl=$(brew --prefix openssl@3)"
+
 # Config how autocomplete works in Warp
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' use-cache on
@@ -48,6 +52,8 @@ source $ZSH/oh-my-zsh.sh
 source "/opt/homebrew/opt/asdf/libexec/asdf.sh"
 fpath=(${ASDF_DIR}/completions $fpath)
 
+alias claude_no_sandbox='claude --settings "{\"sandbox\":{\"enabled\":false}}"'
+
 alias wsc='wt switch --create --execute=claude'
 
 alias tmux='tmux -2' #start with 256 color
@@ -74,14 +80,7 @@ alias chfp='docker run -it --rm --network host ${CH_DOCKERHUB_ACCOUNT}:${CH_VERS
 # Git aliases
 alias g='git'
 alias gs='git status'
-<<<<<<< HEAD
-alias gcm='git checkout master'
 alias gcmn='git checkout main'
-||||||| parent of d816fc9 (Update gitconfig and zshrc)
-alias gcm='git checkout master'
-=======
-alias gcmn='git checkout main'
->>>>>>> d816fc9 (Update gitconfig and zshrc)
 alias gp='git pull'
 alias gpp='git pull --prune'
 alias gfa='git fetch -a'
@@ -106,16 +105,18 @@ alias mdg='mix deps.get'
 alias myip='curl ipinfo.io'
 
 # kubectl
+alias prodkubectl='kubectl --kubeconfig /Users/${DEFAULT_USER}/.kube/prod-config'
 alias kgp='kubectl get pods'
 alias pkgp='prodkubectl get pods'
-alias kgps='kubectl get pods | rg sanbase'
-alias pkgps='prodkubectl get pods | rg sanbase'
+# -A lists every namespace (first column = namespace); filter keeps sanbase pods
+# (default ns) + everything in the llm-agent / llm-sandbox namespaces.
+alias kgps="kubectl get pods -A | rg 'sanbase|^llm-|github-exporter'"
+alias pkgps="prodkubectl get pods -A | rg 'sanbase|^llm-|github-exporter'"
 alias kgpc="kubectl get pods | rg -e 'clickhouse-[012]'"
-alias kgpi='kubectl get pods | rg influxdb'
 alias klf='kubectl logs -f'
 alias klft='kubectl logs -f --tail=100'
 alias klp='kubectl logs -p'
-alias prodkubectl='kubectl --kubeconfig /Users/${DEFAULT_USER}/.kube/prod-config'
+alias videv='vim .env.dev'
 
 # Checkout master or main branch
 function gcm() {
@@ -129,8 +130,6 @@ function gcm() {
   branches=$(git branch --list | sed 's/^..//')
   have_master=$(echo "$branches" | grep -Fx 'master')
   have_main=$(echo "$branches" | grep -Fx 'main')
-  
-  echo "HEHEHEHEH"
 
   if [ -n "$have_master" ] && [ -n "$have_main" ]; then
     echo "🚫 Both 'master' and 'main' branches exist. Ambiguous operation."
@@ -150,12 +149,29 @@ gddm() {
     git difftool -d "${1:-master}..$(git branch --show-current)"
 }
 
+# Logs by pod name from ANY namespace: resolve the pod's namespace first
+# (kubectl takes exactly one -n; there is no multi-namespace logs), fall back
+# to default if the pod is not found anywhere.
 klftn(){
- kubectl logs -f --tail=5000 $1 | gsed 's/\\n/\n/g'
+  local ns=$(kubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
+  kubectl logs -f --tail=5000 -n "${ns:-default}" $1 | gsed 's/\\n/\n/g'
 }
 
-pklftn() {  
-  prodkubectl logs -f --tail=5000 $1 | gsed 's/\\n/\n/g' 
+pklftn() {
+  local ns=$(prodkubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
+  prodkubectl logs -f --tail=5000 -n "${ns:-default}" $1 | gsed 's/\\n/\n/g'
+}
+
+# Shell into a pod by name from ANY namespace (same namespace-resolution trick
+# as klftn). Prefers bash, falls back to sh for slim images without bash.
+ksh() {
+  local ns=$(kubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
+  kubectl exec -it -n "${ns:-default}" $1 -- sh -c 'command -v bash >/dev/null && exec bash || exec sh'
+}
+
+pksh() {
+  local ns=$(prodkubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
+  prodkubectl exec -it -n "${ns:-default}" $1 -- sh -c 'command -v bash >/dev/null && exec bash || exec sh'
 }
 
 who_listens()
@@ -164,11 +180,11 @@ who_listens()
 }
 
 remote_console(){
-  kubectl exec -it $1 /app/bin/sanbase remote
+  kubectl exec -it $1 -- /app/bin/sanbase remote
 }
 
 premote_console(){
-  prodkubectl exec -it $1 /app/bin/sanbase remote
+  prodkubectl exec -it $1 -- /app/bin/sanbase remote
 }
 
 kubelogs() {
@@ -305,3 +321,4 @@ eval "$(direnv hook zsh)"
 
 # Developer supply chain security toolkit
 export PATH="/Users/ivanivanov/security/bin:$PATH"
+export CURL_CA_BUNDLE="$HOME/.config/certs/cert.pem"
