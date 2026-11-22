@@ -61,8 +61,17 @@ source "/opt/homebrew/opt/asdf/libexec/asdf.sh"
 # Completion tweaks. Must come after oh-my-zsh, which sets its own completion
 # styles (including a case- and hyphen-insensitive matcher-list).
 zstyle ':completion:*' use-cache on
-zstyle ':completion:*' menu select
+zstyle ':completion:*' menu no                   # fzf-tab replaces the menu
 zstyle ':completion:*' file-sort modification
+
+# fzf-tab: Tab opens completions in an fzf list (type to filter, Enter picks,
+# < > switch groups). Load after compinit (oh-my-zsh) and before fzf,
+# autosuggestions and syntax highlighting, which wrap Tab and other widgets.
+zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*:git-checkout:*' sort false
+zstyle ':fzf-tab:*' switch-group '<' '>'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
+source /opt/homebrew/opt/fzf-tab/share/fzf-tab/fzf-tab.zsh
 
 # History: keep a lot, and record when each command started and how long it ran.
 # `hist` shows the last 30 with date, time and duration; `hist 100` shows more.
