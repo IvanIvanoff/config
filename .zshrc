@@ -183,6 +183,10 @@ alias myip='curl ipinfo.io'
 alias prodkubectl='kubectl --kubeconfig $HOME/.kube/prod-config'
 alias kgp='kubectl get pods'
 alias pkgp='prodkubectl get pods'
+# k9s: full-screen Kubernetes UI. Prod always opens read-only.
+# Config lives in this repo; per-cluster state there is gitignored.
+export K9S_CONFIG_DIR="$HOME/config/k9s"
+alias pk9s='k9s --kubeconfig $HOME/.kube/prod-config --readonly'
 # -A lists every namespace (first column = namespace); filter keeps sanbase pods
 # (default ns) + everything in the llm-agent / llm-sandbox namespaces.
 alias kgps="kubectl get pods -A | rg 'sanbase|^llm-|github-exporter'"
