@@ -193,6 +193,12 @@ pklftn() {
   prodkubectl logs -f --tail=5000 -n "${ns:-default}" "$1" | gsed 's/\\n/\n/g'
 }
 
+# Follow logs of every pod whose name matches a regex, in all namespaces, with
+# a pod/container prefix per line. New pods (e.g. after a deploy) are picked up.
+# Extra stern flags pass through:  ks sanbase-web -i error --since 5m --tail 200
+ks()  { stern -A --tail 50 "$@"; }
+pks() { stern --kubeconfig "$HOME/.kube/prod-config" -A --tail 50 "$@"; }
+
 # Shell into a pod by name from ANY namespace (same namespace-resolution trick
 # as klftn). Prefers bash, falls back to sh for slim images without bash.
 ksh() {
