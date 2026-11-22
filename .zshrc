@@ -124,6 +124,9 @@ if (( $+functions[_zsh_autosuggest_strategy_atuin] )); then
   }
 fi
 
+# Shift+Enter sends a code zsh doesn't know (it types ";2;13~"); treat it as Enter.
+bindkey '^[[27;2;13~' accept-line
+
 alias claude_no_sandbox='claude --settings "{\"sandbox\":{\"enabled\":false}}"'
 
 alias wsc='wt switch --create --execute=claude'
