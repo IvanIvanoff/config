@@ -1,1 +1,4 @@
 .DS_Store
+
+# Holds prod ClickHouse credentials; restore it from the password manager, never commit it.
+claude/bin/ch-prod-ro

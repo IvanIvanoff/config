@@ -1,0 +1,112 @@
+#!/Library/Developer/CommandLineTools/usr/bin/python3 -I
+"""with-proxy-auth CMD [ARGS...]
+
+Run CMD behind a local, credential-free HTTP proxy that forwards to the
+Claude Code sandbox proxy and adds its Proxy-Authorization header.
+
+Why: the sandbox sets HTTPS_PROXY=http://user:pass@127.0.0.1:PORT. Some
+clients ignore the user:pass part (elixir_make's :httpc downloader, used by
+lazy_html and other precompiled NIFs) and get "407 Proxy Authentication
+Required". Through this shim they don't need credentials.
+
+Safety: all traffic still goes through the sandbox proxy, so its domain
+allowlist applies unchanged. The shim listens on 127.0.0.1 only and exits
+with the command. Outside the sandbox (no credentials in HTTPS_PROXY) it
+just execs CMD.
+"""
+import base64, os, socket, subprocess, sys, threading
+import urllib.parse as up
+
+PROXY_VARS = ("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy", "ALL_PROXY", "all_proxy")
+
+
+def pipe(src, dst):
+    try:
+        while True:
+            data = src.recv(65536)
+            if not data:
+                break
+            dst.sendall(data)
+    except OSError:
+        pass
+    finally:
+        # half-close so the other direction can finish sending (no truncation)
+        for s, how in ((dst, socket.SHUT_WR), (src, socket.SHUT_RD)):
+            try:
+                s.shutdown(how)
+            except OSError:
+                pass
+
+
+def handle(client, upstream, auth_line):
+    up_sock = None
+    try:
+        buf = b""
+        while b"\r\n\r\n" not in buf:
+            chunk = client.recv(65536)
+            if not chunk or len(buf) > 65536:
+                return
+            buf += chunk
+        head, rest = buf.split(b"\r\n\r\n", 1)
+        lines = [l for l in head.split(b"\r\n")
+                 if not l.lower().startswith(b"proxy-authorization:")]
+        lines.insert(1, auth_line)
+        up_sock = socket.create_connection(upstream, timeout=30)
+        up_sock.settimeout(None)
+        up_sock.sendall(b"\r\n".join(lines) + b"\r\n\r\n" + rest)
+        t = threading.Thread(target=pipe, args=(up_sock, client), daemon=True)
+        t.start()
+        pipe(client, up_sock)
+        t.join()
+    except OSError:
+        pass
+    finally:
+        for s in (client, up_sock):
+            if s is not None:
+                try:
+                    s.close()
+                except OSError:
+                    pass
+
+
+def serve(srv, upstream, auth_line):
+    while True:
+        try:
+            client, _ = srv.accept()
+        except OSError:
+            return
+        threading.Thread(target=handle, args=(client, upstream, auth_line), daemon=True).start()
+
+
+def main():
+    cmd = sys.argv[1:]
+    if not cmd:
+        sys.exit("usage: with-proxy-auth CMD [ARGS...]")
+    url = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy") or ""
+    u = up.urlsplit(url)
+    if not (u.username and u.hostname in ("127.0.0.1", "localhost") and u.port):
+        os.execvp(cmd[0], cmd)  # not in the sandbox: run unchanged
+
+    creds = f"{up.unquote(u.username)}:{up.unquote(u.password or '')}".encode()
+    auth_line = b"Proxy-Authorization: Basic " + base64.b64encode(creds)
+
+    srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(64)
+    local = f"http://127.0.0.1:{srv.getsockname()[1]}"
+    threading.Thread(target=serve, args=(srv, (u.hostname, u.port), auth_line), daemon=True).start()
+
+    env = dict(os.environ)
+    for k in PROXY_VARS:
+        if k in env:
+            env[k] = local
+    try:
+        sys.exit(subprocess.call(cmd, env=env))
+    except FileNotFoundError:
+        sys.exit(f"with-proxy-auth: command not found: {cmd[0]}")
+    except KeyboardInterrupt:
+        sys.exit(130)
+
+
+if __name__ == "__main__":
+    main()
