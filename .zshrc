@@ -100,6 +100,12 @@ _fzf_compgen_path() { fd --hidden --exclude .git . "$1"; }
 _fzf_compgen_dir()  { fd --type d --hidden --exclude .git . "$1"; }
 _cached_init fzf --zsh
 
+# zsh-autosuggestions: shows the rest of a matching past command in faint text
+# as you type (atuin's history first, then zsh's). → or End accepts it all,
+# Alt-F accepts one word. Must load before atuin, which plugs itself in.
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=200
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
 # atuin: searchable history with cwd, duration and exit code (Ctrl-R).
 # Config lives in this repo. Up-arrow keeps zsh's normal behavior.
 export ATUIN_CONFIG_DIR="$HOME/config/atuin"
