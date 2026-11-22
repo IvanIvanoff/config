@@ -54,6 +54,13 @@ hist() { fc -liD -"${1:-30}"; }
 
 source "$HOME/config/zsh/prompt.zsh"
 
+# atuin: searchable history with cwd, duration and exit code (Ctrl-R).
+# Config lives in this repo. Up-arrow keeps zsh's normal behavior.
+export ATUIN_CONFIG_DIR="$HOME/config/atuin"
+if command -v atuin >/dev/null 2>&1; then
+  eval "$(atuin init zsh --disable-up-arrow)"
+fi
+
 alias claude_no_sandbox='claude --settings "{\"sandbox\":{\"enabled\":false}}"'
 
 alias wsc='wt switch --create --execute=claude'
