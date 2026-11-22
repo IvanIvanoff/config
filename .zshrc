@@ -1,3 +1,6 @@
+# Startup profiling: `ZPROF=1 zsh -i -c exit` prints where startup time goes.
+[[ -n $ZPROF ]] && zmodload zsh/zprof
+
 export PATH="$HOME/.local/bin:$PATH"
 ZSH_THEME=""   # prompt lives in ~/config/zsh/prompt.zsh (sourced below)
 # to enable history-search-multi-work
@@ -26,7 +29,28 @@ case ":$PATH:" in
 esac
 # pnpm end
 
-eval "$(jump shell)"
+# Run a `tool init`-style command once and cache its output, instead of
+# starting the tool at every shell start. The cache is rebuilt when the tool
+# moves (brew upgrade changes its Cellar path), its binary gets newer, the
+# arguments change, or a file passed with -d changes.
+# Force a rebuild: rm ~/.cache/zsh/init-*.zsh
+_cached_init() {
+  local -a deps
+  while [[ $1 == -d ]]; do deps+=("$2"); shift 2; done
+  local bin=${commands[$1]}
+  [[ -n $bin ]] || return 0                      # tool not installed: skip
+  local cache="$HOME/.cache/zsh/init-$1.zsh" stamp="# ${bin:A} $*" head= f stale=0
+  [[ -r $cache ]] && read -r head < "$cache"
+  [[ $head == "$stamp" && ! $bin -nt $cache ]] || stale=1
+  for f in $deps; do [[ $f -nt $cache ]] && stale=1; done
+  if (( stale )); then
+    mkdir -p "${cache:h}"
+    { print -r -- "$stamp"; command "$@" } >| "$cache" 2>/dev/null || { rm -f "$cache"; return 1 }
+  fi
+  source "$cache"
+}
+
+_cached_init jump shell
 
 HYPHEN_INSENSITIVE="true"
 COMPLETION_WAITING_DOTS="true"
@@ -57,9 +81,7 @@ source "$HOME/config/zsh/prompt.zsh"
 # atuin: searchable history with cwd, duration and exit code (Ctrl-R).
 # Config lives in this repo. Up-arrow keeps zsh's normal behavior.
 export ATUIN_CONFIG_DIR="$HOME/config/atuin"
-if command -v atuin >/dev/null 2>&1; then
-  eval "$(atuin init zsh --disable-up-arrow)"
-fi
+_cached_init -d "$ATUIN_CONFIG_DIR/config.toml" atuin init zsh --disable-up-arrow
 
 alias claude_no_sandbox='claude --settings "{\"sandbox\":{\"enabled\":false}}"'
 
@@ -215,10 +237,10 @@ export GPG_TTY=$TTY
 # sync_work: commit everything, push, open a draft PR
 source "$HOME/config/zsh/sync_work.zsh"
 
-if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
+_cached_init -d "$HOME/.config/worktrunk/config.toml" wt config shell init zsh
 
 # direnv for per-directory environment activation
-eval "$(direnv hook zsh)"
+_cached_init direnv hook zsh
 
 # Developer supply chain security toolkit
 export PATH="$HOME/security/bin:$PATH"
@@ -226,3 +248,5 @@ export CURL_CA_BUNDLE="$HOME/.config/certs/cert.pem"
 
 # Must stay last: it wraps every ZLE widget defined before it.
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+[[ -n $ZPROF ]] && zprof
