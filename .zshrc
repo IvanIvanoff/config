@@ -78,6 +78,19 @@ hist() { fc -liD -"${1:-30}"; }
 
 source "$HOME/config/zsh/prompt.zsh"
 
+# fzf: Ctrl-T picks a file, Alt-C jumps to a directory, `vim **<Tab>` completes
+# paths. Lists come from fd (skips .gitignored files); previews use bat / eza.
+# Loaded before atuin, so atuin keeps Ctrl-R.
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
+export FZF_DEFAULT_OPTS='--height 40% --layout reverse --border'
+export FZF_CTRL_T_COMMAND=$FZF_DEFAULT_COMMAND
+export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:300 {}'"
+export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
+export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always {}'"
+_fzf_compgen_path() { fd --hidden --exclude .git . "$1"; }
+_fzf_compgen_dir()  { fd --type d --hidden --exclude .git . "$1"; }
+_cached_init fzf --zsh
+
 # atuin: searchable history with cwd, duration and exit code (Ctrl-R).
 # Config lives in this repo. Up-arrow keeps zsh's normal behavior.
 export ATUIN_CONFIG_DIR="$HOME/config/atuin"
