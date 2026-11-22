@@ -1,5 +1,5 @@
 export PATH="$HOME/.local/bin:$PATH"
-ZSH_THEME="robbyrussell"
+ZSH_THEME=""   # prompt lives in ~/config/zsh/prompt.zsh (sourced below)
 # to enable history-search-multi-work
 # git clone git@github.com:zdharma-continuum/history-search-multi-word.git ~/.oh-my-zsh/plugins
 plugins=(cp mix git macos history-search-multi-word)
@@ -51,6 +51,8 @@ setopt INC_APPEND_HISTORY_TIME  # write each entry right after it finishes, with
 setopt HIST_IGNORE_SPACE        # a command starting with a space is not saved
 setopt HIST_REDUCE_BLANKS
 hist() { fc -liD -"${1:-30}"; }
+
+source "$HOME/config/zsh/prompt.zsh"
 
 alias claude_no_sandbox='claude --settings "{\"sandbox\":{\"enabled\":false}}"'
 
