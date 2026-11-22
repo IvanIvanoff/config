@@ -1,4 +1,4 @@
-export PATH="/Users/ivanivanov/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 ZSH_THEME="robbyrussell"
 # to enable history-search-multi-work
 # git clone git@github.com:zdharma-continuum/history-search-multi-word.git ~/.oh-my-zsh/plugins
@@ -9,7 +9,7 @@ alias vim=nvim
 export ZSH="$HOME/.oh-my-zsh"
 export EDITOR="nvim"
 export LANG="en_US.UTF-8"
-export UPDATE_ZSH_DAYS=5
+zstyle ':omz:update' frequency 5
 export PATH=$HOME/.cargo/bin:$PATH
 export PATH=/opt/homebrew/opt/postgresql@17/bin:$PATH
 export CLICOLOR=1
@@ -19,7 +19,7 @@ export KERL_BUILD_DOCS=yes
 export KERL_CONFIGURE_OPTIONS="--without-javac --with-ssl=/opt/homebrew/opt/openssl@3"
 
 # pnpm
-export PNPM_HOME="/Users/ivanivanov/Library/pnpm"
+export PNPM_HOME="$HOME/Library/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
@@ -72,7 +72,7 @@ alias gcmn='git checkout main'
 alias gp='git pull'
 alias gpp='git pull --prune'
 alias gfa='git fetch -a'
-alias exformat='git diff master --name-only | grep "ex$\|exs$" | xargs mix format'
+alias exformat="git diff master --name-only --diff-filter=d | grep '\.exs\?$' | xargs mix format"
 
 # Elixir stuff
 alias mtdb='MIX_ENV=test mix do ecto.drop, ecto.create, ecto.load'
@@ -142,41 +142,41 @@ gddm() {
 # to default if the pod is not found anywhere.
 klftn(){
   local ns=$(kubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
-  kubectl logs -f --tail=5000 -n "${ns:-default}" $1 | gsed 's/\\n/\n/g'
+  kubectl logs -f --tail=5000 -n "${ns:-default}" "$1" | gsed 's/\\n/\n/g'
 }
 
 pklftn() {
   local ns=$(prodkubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
-  prodkubectl logs -f --tail=5000 -n "${ns:-default}" $1 | gsed 's/\\n/\n/g'
+  prodkubectl logs -f --tail=5000 -n "${ns:-default}" "$1" | gsed 's/\\n/\n/g'
 }
 
 # Shell into a pod by name from ANY namespace (same namespace-resolution trick
 # as klftn). Prefers bash, falls back to sh for slim images without bash.
 ksh() {
   local ns=$(kubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
-  kubectl exec -it -n "${ns:-default}" $1 -- sh -c 'command -v bash >/dev/null && exec bash || exec sh'
+  kubectl exec -it -n "${ns:-default}" "$1" -- sh -c 'command -v bash >/dev/null && exec bash || exec sh'
 }
 
 pksh() {
   local ns=$(prodkubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
-  prodkubectl exec -it -n "${ns:-default}" $1 -- sh -c 'command -v bash >/dev/null && exec bash || exec sh'
+  prodkubectl exec -it -n "${ns:-default}" "$1" -- sh -c 'command -v bash >/dev/null && exec bash || exec sh'
 }
 
 who_listens()
 {
-  lsof -nP -i4TCP:$1 | grep LISTEN
+  lsof -nP -i4TCP:"$1" | grep LISTEN
 }
 
 remote_console(){
-  kubectl exec -it $1 -- /app/bin/sanbase remote
+  kubectl exec -it "$1" -- /app/bin/sanbase remote
 }
 
 premote_console(){
-  prodkubectl exec -it $1 -- /app/bin/sanbase remote
+  prodkubectl exec -it "$1" -- /app/bin/sanbase remote
 }
 
 kubelogs() {
-  kubectl logs -f $1 > $2
+  kubectl logs -f "$1" > "$2"
 }
 
 alias ls='eza'
@@ -189,7 +189,7 @@ alias rfzfc='rg --files | fzf | pbcopy'
 alias watch='watch '
 alias kgpsw='watch "kubectl get pod | rg sanbase"'
 
-export GPG_TTY=$(tty)
+export GPG_TTY=$TTY
 
 
 ################# GIT SYNC FUNCTION
@@ -303,7 +303,7 @@ if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)
 eval "$(direnv hook zsh)"
 
 # Developer supply chain security toolkit
-export PATH="/Users/ivanivanov/security/bin:$PATH"
+export PATH="$HOME/security/bin:$PATH"
 export CURL_CA_BUNDLE="$HOME/.config/certs/cert.pem"
 
 # Must stay last: it wraps every ZLE widget defined before it.
