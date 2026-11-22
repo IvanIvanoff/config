@@ -111,6 +111,19 @@ source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 export ATUIN_CONFIG_DIR="$HOME/config/atuin"
 _cached_init -d "$ATUIN_CONFIG_DIR/config.toml" atuin init zsh --disable-up-arrow
 
+# No autosuggestions for commands that take a pod name: pods get new names on
+# every deploy, so names remembered in history are usually dead. Press Tab
+# instead, which lists live pods (see "Pod-name completion" below).
+_kpod_cmds='(ksh|pksh|klftn|pklftn|remote_console|premote_console)'
+ZSH_AUTOSUGGEST_HISTORY_IGNORE="${_kpod_cmds} *"
+if (( $+functions[_zsh_autosuggest_strategy_atuin] )); then
+  functions[_zsh_autosuggest_strategy_atuin_all]=$functions[_zsh_autosuggest_strategy_atuin]
+  _zsh_autosuggest_strategy_atuin() {
+    [[ $1 == ${~_kpod_cmds}' '* ]] && return
+    _zsh_autosuggest_strategy_atuin_all "$@"
+  }
+fi
+
 alias claude_no_sandbox='claude --settings "{\"sandbox\":{\"enabled\":false}}"'
 
 alias wsc='wt switch --create --execute=claude'
@@ -226,6 +239,21 @@ pklftn() {
 # Extra stern flags pass through:  ks sanbase-web -i error --since 5m --tail 200
 ks()  { stern -A --tail 50 "$@"; }
 pks() { stern --kubeconfig "$HOME/.kube/prod-config" -A --tail 50 "$@"; }
+
+# Pod-name completion for the pod helpers: Tab and `**<Tab>` list the pods
+# running right now (all namespaces). Prod helpers ask the prod cluster.
+_kpod_names()  { kubectl get pods -A --no-headers -o custom-columns=:metadata.name 2>/dev/null; }
+_pkpod_names() { kubectl --kubeconfig "$HOME/.kube/prod-config" get pods -A --no-headers -o custom-columns=:metadata.name 2>/dev/null; }
+_kpods()  { local -a pods; pods=(${(f)"$(_kpod_names)"});  compadd -a pods; }
+_pkpods() { local -a pods; pods=(${(f)"$(_pkpod_names)"}); compadd -a pods; }
+compdef _kpods  ksh klftn remote_console
+compdef _pkpods pksh pklftn premote_console
+_fzf_complete_ksh()             { _fzf_complete -- "$@" < <(_kpod_names); }
+_fzf_complete_klftn()           { _fzf_complete -- "$@" < <(_kpod_names); }
+_fzf_complete_remote_console()  { _fzf_complete -- "$@" < <(_kpod_names); }
+_fzf_complete_pksh()            { _fzf_complete -- "$@" < <(_pkpod_names); }
+_fzf_complete_pklftn()          { _fzf_complete -- "$@" < <(_pkpod_names); }
+_fzf_complete_premote_console() { _fzf_complete -- "$@" < <(_pkpod_names); }
 
 # Shell into a pod by name from ANY namespace (same namespace-resolution trick
 # as klftn). Prefers bash, falls back to sh for slim images without bash.
