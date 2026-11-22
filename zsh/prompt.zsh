@@ -1,14 +1,13 @@
 # Calm prompt. Extra info only shows up when it matters.
 #
-#   ~/work/sanbase2 main*                                <- cwd + git branch (* = uncommitted changes)
-#   ❯ mix test
-#
-# After Enter, the prompt collapses to one dim line that keeps the context
-# and the time the command started:
-#
-#   ~/work/sanbase2 main* ❯ mix test           14:32:07
+#   ~/work/sanbase2 (main*)  /Users/me/work/sanbase2     <- short path, git branch (* = uncommitted
+#                                                           changes), faint full path (only under ~)
+#   ❯ mix test                                 14:32:07  <- time the prompt appeared
 #   ...output...
 #   ✗ exit 1 · 2m14s                                     <- only if the command failed or took >= 3s
+#   ────────────────────────────────────────────────────  <- faint rule, only after a command ran
+#
+# Nothing is redrawn when you press Enter: what you see is what stays in scrollback.
 #
 # Sourced from ~/.zshrc after oh-my-zsh (uses its git_prompt_info).
 #
@@ -17,7 +16,7 @@
 # finds that text in PROMPT; otherwise git_prompt_info always returns "".
 
 zmodload zsh/datetime            # $EPOCHREALTIME
-autoload -Uz add-zsh-hook add-zle-hook-widget
+autoload -Uz add-zsh-hook
 setopt PROMPT_SUBST
 
 : ${PROMPT_MIN_DURATION:=3}      # seconds before a duration is shown
@@ -29,7 +28,7 @@ ZSH_THEME_GIT_PROMPT_SUFFIX=")"
 ZSH_THEME_GIT_PROMPT_DIRTY="*"
 ZSH_THEME_GIT_PROMPT_CLEAN=""
 
-typeset -g _prompt_start= _p_host= _p_dim= _p_end=
+typeset -g _prompt_start= _p_host= _p_full=
 
 # 4.2s / 2m14s / 1h03m
 _prompt_duration() {
@@ -62,30 +61,25 @@ _prompt_precmd() {
     fi
     [[ -n $out ]] && print -rP -- "$out"
     _prompt_start=
+
+    # Faint full-width rule between the previous command's output and the new prompt.
+    # Mid-gray (243) + faint lands close to the background in light and dark themes.
+    print -r -- $'\e[2;38;5;243m'"${(l:COLUMNS::─:)}"$'\e[22;39m'
   fi
 
-  # Full prompt: cyan dir, red branch, arrow on its own line (red if the last command failed).
   _p_host=
   [[ -n $SSH_CONNECTION ]] && _p_host='%F{244}%n@%m%f '
-  _p_dim=
-  _p_end=$'\n''%(?.%F{green}.%F{red})❯%f '
-}
 
-# After Enter, redraw the prompt as one line (dir, branch, arrow) in the same
-# colors but faint (SGR 2), so it follows the terminal theme. Faint ends right
-# after the arrow, so the command itself keeps its normal colors.
-# The right side re-renders at the same moment, so it shows when the command started.
-_prompt_transient() {
-  [[ $CONTEXT == start ]] || return 0
-  _p_dim=$'%{\e[2m%}'
-  _p_end=' %(?.%F{green}.%F{red})❯%f'$'%{\e[22m%}'' '
-  zle .reset-prompt
+  # Full path, faint, after the short one. Only under ~: elsewhere they'd be identical.
+  _p_full=
+  [[ $PWD == $HOME || $PWD == $HOME/* ]] &&
+    _p_full="  "$'%{\e[2m%}%F{243}'"${PWD//\%/%%}"$'%f%{\e[22m%}'
 }
 
 add-zsh-hook preexec _prompt_preexec
 add-zsh-hook precmd _prompt_precmd
-zle -N _prompt_transient
-add-zle-hook-widget zle-line-finish _prompt_transient
 
-PROMPT='${_p_dim}${_p_host}%F{cyan}%~%f%F{red}$(git_prompt_info)%f${_p_end}'
+# Cyan short path, red branch, faint full path; then the arrow on its own line
+# (red if the last command failed).
+PROMPT='${_p_host}%F{cyan}%~%f%F{red}$(git_prompt_info)%f${_p_full}'$'\n''%(?.%F{green}.%F{red})❯%f '
 RPROMPT='%F{240}%*%f'
