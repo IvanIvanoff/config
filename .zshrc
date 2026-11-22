@@ -1,5 +1,4 @@
 export PATH="/Users/ivanivanov/.local/bin:$PATH"
-DEFAULT_USER="ivanivanov"
 ZSH_THEME="robbyrussell"
 # to enable history-search-multi-work
 # git clone git@github.com:zdharma-continuum/history-search-multi-word.git ~/.oh-my-zsh/plugins
@@ -11,21 +10,13 @@ export ZSH="$HOME/.oh-my-zsh"
 export EDITOR="nvim"
 export LANG="en_US.UTF-8"
 export UPDATE_ZSH_DAYS=5
-export PATH=$HOME/.local/bin:$PATH
 export PATH=$HOME/.cargo/bin:$PATH
 export PATH=/opt/homebrew/opt/postgresql@17/bin:$PATH
-export PATH="/Users/ivanivanov/.asdf/installs/nodejs/24.10.0/bin:$PATH"
 export CLICOLOR=1
 
 # Erlang asdf/kerl install opts
 export KERL_BUILD_DOCS=yes
-export KERL_CONFIGURE_OPTIONS="--without-javac --with-ssl=$(brew --prefix openssl@3)"
-
-# Config how autocomplete works in Warp
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
-zstyle ':completion:*' use-cache on
-zstyle ':completion:*' menu select
-zstyle ':completion:*' file-sort modification
+export KERL_CONFIGURE_OPTIONS="--without-javac --with-ssl=/opt/homebrew/opt/openssl@3"
 
 # pnpm
 export PNPM_HOME="/Users/ivanivanov/Library/pnpm"
@@ -36,20 +27,18 @@ esac
 # pnpm end
 
 eval "$(jump shell)"
-autoload -Uz compinit && compinit -i
 
 HYPHEN_INSENSITIVE="true"
 COMPLETION_WAITING_DOTS="true"
 
-local ret_status=%(?:%{$fg_bold[green]%}➜ :%{$fg_bold[red]%}➜ )
-# PROMPT='${ret_status} %{$fg[cyan]%}%c%{$reset_color%} $(git_prompt_info)'
-# RPROMPT="[%D{%f/%m/%y}|%*]"
-
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
 source $ZSH/oh-my-zsh.sh
 source "/opt/homebrew/opt/asdf/libexec/asdf.sh"
-fpath=(${ASDF_DIR}/completions $fpath)
+
+# Completion tweaks. Must come after oh-my-zsh, which sets its own completion
+# styles (including a case- and hyphen-insensitive matcher-list).
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' menu select
+zstyle ':completion:*' file-sort modification
 
 alias claude_no_sandbox='claude --settings "{\"sandbox\":{\"enabled\":false}}"'
 
@@ -87,14 +76,14 @@ alias exformat='git diff master --name-only | grep "ex$\|exs$" | xargs mix forma
 
 # Elixir stuff
 alias mtdb='MIX_ENV=test mix do ecto.drop, ecto.create, ecto.load'
-alias iex='iex --erl "-kernel shell_history enabled~"'
-alias im='iex --erl "-kernel shell_history enabled" -S mix'
-alias lb_imps='export PORT=4000  && iex --cookie mycookie --sname sanbase  --erl "-kernel shell_history enabled" -S mix phx.server'
+# Enable IEx shell history for every iex/erl session
+export ERL_AFLAGS="-kernel shell_history enabled"
+alias im='iex -S mix'
+alias lb_imps='PORT=4000 iex --cookie mycookie --sname sanbase -S mix phx.server'
 alias lb_imps2='iex --name sanbase@127.0.0.1 --cookie mycookie -S mix'
-alias imps='export PORT=4000  && iex --cookie mycookie --sname sanbase  --erl "-kernel shell_history enabled" -S mix phx.server'
-alias imps2='export PORT=4001 && iex --cookie mycookie --sname sanbase2 --erl "-kernel shell_history enabled" -S mix phx.server'
-alias impsn='iex --cookie mycookie --erl "-kernel shell_history enabled" -S mix phx.server'
-alias iex='iex --erl "-kernel shell_history enabled"'
+alias imps='PORT=4000 iex --cookie mycookie --sname sanbase -S mix phx.server'
+alias imps2='PORT=4001 iex --cookie mycookie --sname sanbase2 -S mix phx.server'
+alias impsn='iex --cookie mycookie -S mix phx.server'
 alias mc='mix compile'
 alias mt='mix test'
 alias mta='MIX_ENV=test mix test_all --formatter Sanbase.FailedTestFormatter --formatter ExUnit.CLIFormatter'
@@ -104,7 +93,7 @@ alias mdg='mix deps.get'
 alias myip='curl ipinfo.io'
 
 # kubectl
-alias prodkubectl='kubectl --kubeconfig /Users/${DEFAULT_USER}/.kube/prod-config'
+alias prodkubectl='kubectl --kubeconfig $HOME/.kube/prod-config'
 alias kgp='kubectl get pods'
 alias pkgp='prodkubectl get pods'
 # -A lists every namespace (first column = namespace); filter keeps sanbase pods
@@ -201,8 +190,6 @@ alias watch='watch '
 alias kgpsw='watch "kubectl get pod | rg sanbase"'
 
 export GPG_TTY=$(tty)
-
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 
 ################# GIT SYNC FUNCTION
@@ -310,9 +297,6 @@ This PR contains ongoing work from the $current_branch branch.
 }
 ################# END GIT SYNC FUNCTION
 
-# OpenClaw Completion
-source "/Users/ivanivanov/.openclaw/completions/openclaw.zsh"
-
 if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
 
 # direnv for per-directory environment activation
@@ -321,3 +305,6 @@ eval "$(direnv hook zsh)"
 # Developer supply chain security toolkit
 export PATH="/Users/ivanivanov/security/bin:$PATH"
 export CURL_CA_BUNDLE="$HOME/.config/certs/cert.pem"
+
+# Must stay last: it wraps every ZLE widget defined before it.
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
