@@ -197,6 +197,40 @@ alias klft='kubectl logs -f --tail=100'
 alias klp='kubectl logs -p'
 alias videv='vim .env.dev'
 
+# viddy runs commands with sh, which doesn't know zsh aliases. This expands the first
+# alias it finds (and aliases inside it, like prodkubectl) and passes viddy the whole
+# command as one string, so a pipe inside the alias runs inside viddy:
+#   viddy kgps      viddy -n 5 pkgps
+viddy() {
+  local -i i=1
+  local cmd w seen=' '
+  local -a words
+  # Skip viddy's own options (and the values of those that take one) to find the command.
+  while (( i <= $# )) && [[ ${@[i]} == -* ]]; do
+    [[ ${@[i]} == (-n|--interval|--shell|--save|--load) ]] && (( i++ ))
+    (( i++ ))
+  done
+  (( i <= $# )) && (( $+aliases[${@[i]}] )) || { command viddy "$@"; return }
+  cmd=${(j: :)@[i,-1]}
+  while words=(${(z)cmd}); w=$words[1]; (( $+aliases[$w] )) && [[ $seen != *" $w "* ]]; do
+    seen+="$w "
+    cmd="${aliases[$w]}${cmd#"$w"}"
+  done
+  command viddy "${@[1,i-1]}" "$cmd"
+}
+alias v='viddy'
+
+# y: yazi file manager. Quit with q and the shell moves to the folder you were in;
+# Q quits without moving.
+y() {
+  local tmp cwd
+  tmp=$(mktemp -t yazi-cwd.XXXXXX) || return
+  command yazi "$@" --cwd-file="$tmp"
+  IFS= read -r -d '' cwd < "$tmp"
+  [[ -n $cwd && $cwd != $PWD ]] && builtin cd -- "$cwd"
+  rm -f -- "$tmp"
+}
+
 # Checkout master or main branch
 function gcm() {
   # Check if in a git repo
