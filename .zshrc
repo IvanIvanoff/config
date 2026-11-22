@@ -8,7 +8,7 @@ plugins=(cp mix git macos history-search-multi-word)
 alias vim=nvim
 
 export ZSH="$HOME/.oh-my-zsh"
-export EDITOR="vim"
+export EDITOR="nvim"
 export LANG="en_US.UTF-8"
 export UPDATE_ZSH_DAYS=5
 export PATH=$HOME/.local/bin:$PATH
@@ -16,7 +16,6 @@ export PATH=$HOME/.cargo/bin:$PATH
 export PATH=/opt/homebrew/opt/postgresql@17/bin:$PATH
 export PATH="/Users/ivanivanov/.asdf/installs/nodejs/24.10.0/bin:$PATH"
 export CLICOLOR=1
-export TERM=xterm-256color
 
 # Erlang asdf/kerl install opts
 export KERL_BUILD_DOCS=yes
@@ -123,7 +122,7 @@ function gcm() {
   # Check if in a git repo
     if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         echo "Error: This is not a git directory!"
-        exit 1
+        return 1
     fi
 
   # Gather local branches
