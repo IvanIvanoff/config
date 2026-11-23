@@ -1,0 +1,20 @@
+# Atuin config. Loaded via ATUIN_CONFIG_DIR=$HOME/config/atuin (set in ~/.zshrc).
+# The history database lives in ~/.local/share/atuin and is NOT part of this repo.
+
+## Local only: never sync history to a server, never check for updates.
+auto_sync = false
+update_check = false
+
+## Search UI
+search_mode = "fuzzy"
+filter_mode = "global"     # Ctrl-R searches everything; press Ctrl-R again inside to cycle host/session/directory
+style = "compact"
+inline_height = 20         # open below the prompt instead of taking the whole screen
+show_preview = true        # show the full command when it's too long for the list
+enter_accept = false       # Enter puts the command in the prompt to review; it does not run it
+
+## Keep secrets out of the database
+secrets_filter = true      # built-in patterns: AWS keys, GitHub/Slack/Stripe tokens, ...
+history_filter = [
+  "^export \\S*(TOKEN|SECRET|PASSWORD|PASSWD|API_KEY)\\S*=",
+]

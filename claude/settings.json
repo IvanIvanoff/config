@@ -1,0 +1,279 @@
+{
+  "$schema": "file:///Users/ivanivanov/.claude/schemas/claude-code-settings.json",
+  "env": {
+    "GNUPGHOME": "/Users/ivanivanov/.gnupg-sandbox",
+    "GIT_CONFIG_GLOBAL": "/Users/ivanivanov/config/.gitconfig"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(mix *)",
+      "Bash(MIX_ENV=* mix *)",
+      "Bash(/Users/ivanivanov/.local/bin/with-proxy-auth mix *)",
+      "Bash(MIX_ENV=* /Users/ivanivanov/.local/bin/with-proxy-auth mix *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git diff *)",
+      "Bash(git status *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(sort *)",
+      "Bash(wc *)",
+      "Bash(comm *)",
+      "Bash(npm install *)",
+      "Bash(curl *)",
+      "WebSearch",
+      "WebFetch(domain:hexdocs.pm)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:elixirforum.com)",
+      "WebFetch(domain:buildkite.com)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh api repos/*/pulls/*)",
+      "Bash(git stash list*)",
+      "Bash(git stash show *)",
+      "Bash(psql -h localhost *)",
+      "Bash(psql -h 127.0.0.1 *)",
+      "Bash(psql postgres://*@localhost*)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Edit(~/.claude/bin/**)",
+      "Read(~/.claude/bin/**)",
+      "Bash(git -C * push*)",
+      "Bash(MIX_ENV=prod *)",
+      "Bash(MIX_ENV=stage *)",
+      "Bash(DATABASE_URL=*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.kube/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.docker/config.json)",
+      "Read(~/.zsh_history)",
+      "Read(~/Library/**)",
+      "Read(~/Documents/**)",
+      "Read(~/Downloads/**)",
+      "Read(~/Desktop/**)"
+    ],
+    "ask": [
+      "Edit(**/.claude/settings.json)",
+      "Edit(**/.claude/settings.local.json)",
+      "Edit(~/.claude/settings.json)",
+      "Edit(~/.claude/settings.local.json)",
+      "Edit(~/.claude/*.sh)",
+      "Edit(~/.claude/hooks/**)",
+      "Edit(~/.claude/plugins/**)",
+      "Edit(~/.claude/CLAUDE.md)",
+      "Edit(~/.claude/skills/**)",
+      "Edit(~/.claude/agents/**)",
+      "Edit(~/.claude/commands/**)",
+      "Edit(**/.claude/skills/**)",
+      "Edit(**/.claude/agents/**)",
+      "Edit(**/.claude/commands/**)",
+      "Edit(**/.claude/hooks/**)",
+      "Edit(**/.mcp.json)"
+    ],
+    "additionalDirectories": [
+      "/Users/ivanivanov/.claude",
+      "/Users/ivanivanov/config"
+    ]
+  },
+  "model": "opus",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/bash /Users/ivanivanov/.claude/hooks/gh-strip-env.sh"
+          },
+          {
+            "type": "command",
+            "command": "/bin/bash /Users/ivanivanov/.claude/hooks/mix-proxy-auth.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/ivanivanov/.claude/claude-notify.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash -c 'f=$(ls -t ~/.claude/plugins/cache/caveman/caveman/*/hooks/caveman-statusline.sh 2>/dev/null | head -1); [ -n \"$f\" ] && exec bash \"$f\"'"
+  },
+  "enabledPlugins": {
+    "worktrunk@worktrunk": true,
+    "caveman@caveman": true,
+    "document-skills@anthropic-agent-skills": true,
+    "frontend-design@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "worktrunk": {
+      "source": {
+        "source": "github",
+        "repo": "max-sixty/worktrunk"
+      }
+    },
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    },
+    "anthropic-agent-skills": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/skills"
+      }
+    }
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "allowUnsandboxedCommands": false,
+    "network": {
+      "allowedDomains": [
+        "localhost",
+        "127.0.0.1",
+        "github.com",
+        "api.github.com",
+        "*.githubusercontent.com",
+        "hex.pm",
+        "*.hex.pm",
+        "hexdocs.pm",
+        "*.hexdocs.pm",
+        "registry.npmjs.org",
+        "*.npmjs.org"
+      ],
+      "deniedDomains": [
+        "*.san"
+      ],
+      "strictAllowlist": false,
+      "allowUnixSockets": [
+        "/Users/ivanivanov/.gnupg/S.gpg-agent.extra",
+        "/Users/ivanivanov/.gnupg-sandbox/S.gpg-agent"
+      ],
+      "allowLocalBinding": true
+    },
+    "filesystem": {
+      "allowWrite": [
+        "~/.hex",
+        "~/.mix",
+        "~/.npm",
+        "~/.cache",
+        "~/.gnupg-sandbox",
+        "~/Library/Caches/tree-sitter-language-pack",
+        "~/work/san-vulnerabilities-fixes",
+        "~/Library/Caches/elixir_make",
+        "/tmp/sanbase",
+        "~/work/sanbase2/.hex",
+        "~/work/sanbase2/.mix",
+        "~/.config/ghostty",
+        "~/Library/Application Support/com.cmuxterm.app",
+        "~/Library/Application Support/com.mitchellh.ghostty",
+        "~/config"
+      ],
+      "denyRead": [
+        "~/",
+        "~/.claude/bin"
+      ],
+      "allowRead": [
+        "~/.asdf",
+        "~/.cache",
+        "~/.claude",
+        "~/.config/certs",
+        "~/.config/cmux",
+        "~/.config/ghostty",
+        "~/.config/git",
+        "~/.config/worktrunk",
+        "~/.gitconfig",
+        "~/.gitignore_global",
+        "~/.hex",
+        "~/.local/bin",
+        "~/.mix",
+        "~/.npm",
+        "~/.tool-versions",
+        "~/.zshrc",
+        "~/code",
+        "~/config/.gitconfig",
+        "~/config",
+        "~/work",
+        "~/.config/gh",
+        "~/.gnupg-sandbox",
+        "~/Library/Caches/tree-sitter-language-pack",
+        "~/Library/Caches/elixir_make",
+        "~/Library/Application Support/com.cmuxterm.app",
+        "~/Library/Application Support/com.mitchellh.ghostty"
+      ]
+    },
+    "excludedCommands": [
+      "~/.claude/bin/ch-prod-ro *",
+      "/Users/ivanivanov/.claude/bin/ch-prod-ro *",
+      "gh pr view *",
+      "gh pr list *",
+      "gh pr diff *",
+      "gh pr checks *",
+      "gh run list *",
+      "gh run view *",
+      "gh auth status*",
+      "git switch -c *",
+      "git switch --create *",
+      "git checkout -b *",
+      "git branch --set-upstream-to*",
+      "git branch -u *",
+      "git worktree add *"
+    ]
+  },
+  "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
+  "tui": "fullscreen",
+  "skipWorkflowUsageWarning": true,
+  "theme": "dark",
+  "preferredNotifChannel": "ghostty",
+  "switchModelsOnFlag": true,
+  "inputNeededNotifEnabled": true,
+  "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "Bash(mix ecto.drop:*) — Sensitive Remote Exec / Irreversible Local Destruction carve-out reinforcement for non-local DB targets in sanbase2",
+      "Bash(psql:*) and Bash(pg_dump:*) against non-localhost DATABASE_URL in this repo",
+      "Bash(prodkubectl:*) — shell history shows frequent (8x) use of what appears to be a prod-scoped kubectl wrapper; propose as soft-deny carve-out pending confirmation of intent per prod-namespace write caution",
+      "Bash(remote_console:*) and Bash(premote_console:*) — shell history shows frequent (22x combined) use of remote console tools, which may reach non-local systems; propose as soft-deny consistent with Remote Shell Writes / Sensitive Remote Exec defaults"
+    ],
+    "environment": [
+      "### Org-wide",
+      "**Organization**: Santiment (github.com/santiment — inferred from repo remote `santiment/sanbase2`)",
+      "**Repository visibility**: Public (github santiment/sanbase2, confirmed via gh)",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Default / protected branches**: Default branch `master`; protected branches: `master` (via gh); Rulesets: none listed",
+      "**Network posture**: WireGuard VPN required to reach stage/production services (e.g. *.stage.san resolves only over VPN, per .env.example)",
+      "**Source control**: the git repository the session started in (usually under ~/work or ~/code) and its own remotes; main repo is santiment/sanbase2 (public)",
+      "**Sensitive data locations & audiences**: .env.dev, .env.example, config/prod.exs, config/*.secret.exs, load_test/data/apikeys.json, lib/sanbase/disagreement_tweets/tweet_classification.ex — any credentials, personal data, or regulated data in these; share only with audiences cleared at the [named+specifics] bar",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment (hyphen/underscore/dot-delimited — e.g. matches `prod-db`, not `producer`)",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development (Elixir/Phoenix GraphQL API — sanbase2)",
+      "**Trusted repos**: the git repository the session started in, under ~/work or ~/code; main one santiment/sanbase2 (github.com:santiment/sanbase2.git, public — confidential material never goes into it)",
+      "**Org-specific CLIs**: kubectl, prodkubectl, remote_console, premote_console may reach stage/prod — treat as sensitive remote exec; ~/.claude/bin/ch-prod-ro is the only sanctioned prod access (read-only ClickHouse)",
+      "Git commits/pushes: never commit or push without explicit per-request instruction from the user (per ~/.claude/CLAUDE.md); this applies only to that one request and never carries over"
+    ]
+  }
+}

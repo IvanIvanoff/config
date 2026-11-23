@@ -1,6 +1,8 @@
-export PATH="/Users/ivanivanov/.local/bin:$PATH"
-DEFAULT_USER="ivanivanov"
-ZSH_THEME="robbyrussell"
+# Startup profiling: `ZPROF=1 zsh -i -c exit` prints where startup time goes.
+[[ -n $ZPROF ]] && zmodload zsh/zprof
+
+export PATH="$HOME/.local/bin:$PATH"
+ZSH_THEME=""   # prompt lives in ~/config/zsh/prompt.zsh (sourced below)
 # to enable history-search-multi-work
 # git clone git@github.com:zdharma-continuum/history-search-multi-word.git ~/.oh-my-zsh/plugins
 plugins=(cp mix git macos history-search-multi-word)
@@ -8,49 +10,122 @@ plugins=(cp mix git macos history-search-multi-word)
 alias vim=nvim
 
 export ZSH="$HOME/.oh-my-zsh"
-export EDITOR="vim"
+export EDITOR="nvim"
 export LANG="en_US.UTF-8"
-export UPDATE_ZSH_DAYS=5
-export PATH=$HOME/.local/bin:$PATH
+zstyle ':omz:update' frequency 5
 export PATH=$HOME/.cargo/bin:$PATH
 export PATH=/opt/homebrew/opt/postgresql@17/bin:$PATH
-export PATH="/Users/ivanivanov/.asdf/installs/nodejs/24.10.0/bin:$PATH"
 export CLICOLOR=1
-export TERM=xterm-256color
 
 # Erlang asdf/kerl install opts
 export KERL_BUILD_DOCS=yes
-export KERL_CONFIGURE_OPTIONS="--without-javac --with-ssl=$(brew --prefix openssl@3)"
-
-# Config how autocomplete works in Warp
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
-zstyle ':completion:*' use-cache on
-zstyle ':completion:*' menu select
-zstyle ':completion:*' file-sort modification
+export KERL_CONFIGURE_OPTIONS="--without-javac --with-ssl=/opt/homebrew/opt/openssl@3"
 
 # pnpm
-export PNPM_HOME="/Users/ivanivanov/Library/pnpm"
+export PNPM_HOME="$HOME/Library/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
 
-eval "$(jump shell)"
-autoload -Uz compinit && compinit -i
+# Run a `tool init`-style command once and cache its output, instead of
+# starting the tool at every shell start. The cache is rebuilt when the tool
+# moves (brew upgrade changes its Cellar path), its binary gets newer, the
+# arguments change, or a file passed with -d changes.
+# Force a rebuild: rm ~/.cache/zsh/init-*.zsh
+_cached_init() {
+  local -a deps
+  while [[ $1 == -d ]]; do deps+=("$2"); shift 2; done
+  local bin=${commands[$1]}
+  [[ -n $bin ]] || return 0                      # tool not installed: skip
+  local cache="$HOME/.cache/zsh/init-$1.zsh" stamp="# ${bin:A} $*" head= f stale=0
+  [[ -r $cache ]] && read -r head < "$cache"
+  [[ $head == "$stamp" && ! $bin -nt $cache ]] || stale=1
+  for f in $deps; do [[ $f -nt $cache ]] && stale=1; done
+  if (( stale )); then
+    mkdir -p "${cache:h}"
+    { print -r -- "$stamp"; command "$@" } >| "$cache" 2>/dev/null || { rm -f "$cache"; return 1 }
+  fi
+  source "$cache"
+}
+
+_cached_init jump shell
 
 HYPHEN_INSENSITIVE="true"
 COMPLETION_WAITING_DOTS="true"
 
-local ret_status=%(?:%{$fg_bold[green]%}➜ :%{$fg_bold[red]%}➜ )
-# PROMPT='${ret_status} %{$fg[cyan]%}%c%{$reset_color%} $(git_prompt_info)'
-# RPROMPT="[%D{%f/%m/%y}|%*]"
-
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
 source $ZSH/oh-my-zsh.sh
 source "/opt/homebrew/opt/asdf/libexec/asdf.sh"
-fpath=(${ASDF_DIR}/completions $fpath)
+
+# Completion tweaks. Must come after oh-my-zsh, which sets its own completion
+# styles (including a case- and hyphen-insensitive matcher-list).
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' menu no                   # fzf-tab replaces the menu
+zstyle ':completion:*' file-sort modification
+
+# fzf-tab: Tab opens completions in an fzf list (type to filter, Enter picks,
+# < > switch groups). Load after compinit (oh-my-zsh) and before fzf,
+# autosuggestions and syntax highlighting, which wrap Tab and other widgets.
+zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*:git-checkout:*' sort false
+zstyle ':fzf-tab:*' switch-group '<' '>'
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
+source /opt/homebrew/opt/fzf-tab/share/fzf-tab/fzf-tab.zsh
+
+# History: keep a lot, and record when each command started and how long it ran.
+# `hist` shows the last 30 with date, time and duration; `hist 100` shows more.
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=250000                 # in memory; must exceed SAVEHIST so HIST_EXPIRE_DUPS_FIRST has room
+SAVEHIST=200000                 # on disk
+setopt EXTENDED_HISTORY         # save ": <start>:<duration>;<command>"
+unsetopt SHARE_HISTORY INC_APPEND_HISTORY   # both write entries before they finish (duration 0)
+setopt INC_APPEND_HISTORY_TIME  # write each entry right after it finishes, with its real duration
+setopt HIST_IGNORE_SPACE        # a command starting with a space is not saved
+setopt HIST_REDUCE_BLANKS
+hist() { fc -liD -"${1:-30}"; }
+
+source "$HOME/config/zsh/prompt.zsh"
+
+# fzf: Ctrl-T picks a file, Alt-C jumps to a directory, `vim **<Tab>` completes
+# paths. Lists come from fd (skips .gitignored files); previews use bat / eza.
+# Loaded before atuin, so atuin keeps Ctrl-R.
+export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
+export FZF_DEFAULT_OPTS='--height 40% --layout reverse --border'
+export FZF_CTRL_T_COMMAND=$FZF_DEFAULT_COMMAND
+export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:300 {}'"
+export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
+export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always {}'"
+_fzf_compgen_path() { fd --hidden --exclude .git . "$1"; }
+_fzf_compgen_dir()  { fd --type d --hidden --exclude .git . "$1"; }
+_cached_init fzf --zsh
+
+# zsh-autosuggestions: shows the rest of a matching past command in faint text
+# as you type (atuin's history first, then zsh's). → or End accepts it all,
+# Alt-F accepts one word. Must load before atuin, which plugs itself in.
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=200
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# atuin: searchable history with cwd, duration and exit code (Ctrl-R).
+# Config lives in this repo. Up-arrow keeps zsh's normal behavior.
+export ATUIN_CONFIG_DIR="$HOME/config/atuin"
+_cached_init -d "$ATUIN_CONFIG_DIR/config.toml" atuin init zsh --disable-up-arrow
+
+# No autosuggestions for commands that take a pod name: pods get new names on
+# every deploy, so names remembered in history are usually dead. Press Tab
+# instead, which lists live pods (see "Pod-name completion" below).
+_kpod_cmds='(ksh|pksh|klftn|pklftn|remote_console|premote_console)'
+ZSH_AUTOSUGGEST_HISTORY_IGNORE="${_kpod_cmds} *"
+if (( $+functions[_zsh_autosuggest_strategy_atuin] )); then
+  functions[_zsh_autosuggest_strategy_atuin_all]=$functions[_zsh_autosuggest_strategy_atuin]
+  _zsh_autosuggest_strategy_atuin() {
+    [[ $1 == ${~_kpod_cmds}' '* ]] && return
+    _zsh_autosuggest_strategy_atuin_all "$@"
+  }
+fi
+
+# Shift+Enter sends a code zsh doesn't know (it types ";2;13~"); treat it as Enter.
+bindkey '^[[27;2;13~' accept-line
 
 alias claude_no_sandbox='claude --settings "{\"sandbox\":{\"enabled\":false}}"'
 
@@ -84,18 +159,18 @@ alias gcmn='git checkout main'
 alias gp='git pull'
 alias gpp='git pull --prune'
 alias gfa='git fetch -a'
-alias exformat='git diff master --name-only | grep "ex$\|exs$" | xargs mix format'
+alias exformat="git diff master --name-only --diff-filter=d | grep '\.exs\?$' | xargs mix format"
 
 # Elixir stuff
 alias mtdb='MIX_ENV=test mix do ecto.drop, ecto.create, ecto.load'
-alias iex='iex --erl "-kernel shell_history enabled~"'
-alias im='iex --erl "-kernel shell_history enabled" -S mix'
-alias lb_imps='export PORT=4000  && iex --cookie mycookie --sname sanbase  --erl "-kernel shell_history enabled" -S mix phx.server'
+# Enable IEx shell history for every iex/erl session
+export ERL_AFLAGS="-kernel shell_history enabled"
+alias im='iex -S mix'
+alias lb_imps='PORT=4000 iex --cookie mycookie --sname sanbase -S mix phx.server'
 alias lb_imps2='iex --name sanbase@127.0.0.1 --cookie mycookie -S mix'
-alias imps='export PORT=4000  && iex --cookie mycookie --sname sanbase  --erl "-kernel shell_history enabled" -S mix phx.server'
-alias imps2='export PORT=4001 && iex --cookie mycookie --sname sanbase2 --erl "-kernel shell_history enabled" -S mix phx.server'
-alias impsn='iex --cookie mycookie --erl "-kernel shell_history enabled" -S mix phx.server'
-alias iex='iex --erl "-kernel shell_history enabled"'
+alias imps='PORT=4000 iex --cookie mycookie --sname sanbase -S mix phx.server'
+alias imps2='PORT=4001 iex --cookie mycookie --sname sanbase2 -S mix phx.server'
+alias impsn='iex --cookie mycookie -S mix phx.server'
 alias mc='mix compile'
 alias mt='mix test'
 alias mta='MIX_ENV=test mix test_all --formatter Sanbase.FailedTestFormatter --formatter ExUnit.CLIFormatter'
@@ -105,9 +180,13 @@ alias mdg='mix deps.get'
 alias myip='curl ipinfo.io'
 
 # kubectl
-alias prodkubectl='kubectl --kubeconfig /Users/${DEFAULT_USER}/.kube/prod-config'
+alias prodkubectl='kubectl --kubeconfig $HOME/.kube/prod-config'
 alias kgp='kubectl get pods'
 alias pkgp='prodkubectl get pods'
+# k9s: full-screen Kubernetes UI. Prod always opens read-only.
+# Config lives in this repo; per-cluster state there is gitignored.
+export K9S_CONFIG_DIR="$HOME/config/k9s"
+alias pk9s='k9s --kubeconfig $HOME/.kube/prod-config --readonly'
 # -A lists every namespace (first column = namespace); filter keeps sanbase pods
 # (default ns) + everything in the llm-agent / llm-sandbox namespaces.
 alias kgps="kubectl get pods -A | rg 'sanbase|^llm-|github-exporter'"
@@ -118,12 +197,46 @@ alias klft='kubectl logs -f --tail=100'
 alias klp='kubectl logs -p'
 alias videv='vim .env.dev'
 
+# viddy runs commands with sh, which doesn't know zsh aliases. This expands the first
+# alias it finds (and aliases inside it, like prodkubectl) and passes viddy the whole
+# command as one string, so a pipe inside the alias runs inside viddy:
+#   viddy kgps      viddy -n 5 pkgps
+viddy() {
+  local -i i=1
+  local cmd w seen=' '
+  local -a words
+  # Skip viddy's own options (and the values of those that take one) to find the command.
+  while (( i <= $# )) && [[ ${@[i]} == -* ]]; do
+    [[ ${@[i]} == (-n|--interval|--shell|--save|--load) ]] && (( i++ ))
+    (( i++ ))
+  done
+  (( i <= $# )) && (( $+aliases[${@[i]}] )) || { command viddy "$@"; return }
+  cmd=${(j: :)@[i,-1]}
+  while words=(${(z)cmd}); w=$words[1]; (( $+aliases[$w] )) && [[ $seen != *" $w "* ]]; do
+    seen+="$w "
+    cmd="${aliases[$w]}${cmd#"$w"}"
+  done
+  command viddy "${@[1,i-1]}" "$cmd"
+}
+alias v='viddy'
+
+# y: yazi file manager. Quit with q and the shell moves to the folder you were in;
+# Q quits without moving.
+y() {
+  local tmp cwd
+  tmp=$(mktemp -t yazi-cwd.XXXXXX) || return
+  command yazi "$@" --cwd-file="$tmp"
+  IFS= read -r -d '' cwd < "$tmp"
+  [[ -n $cwd && $cwd != $PWD ]] && builtin cd -- "$cwd"
+  rm -f -- "$tmp"
+}
+
 # Checkout master or main branch
 function gcm() {
   # Check if in a git repo
     if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         echo "Error: This is not a git directory!"
-        exit 1
+        return 1
     fi
 
   # Gather local branches
@@ -154,46 +267,69 @@ gddm() {
 # to default if the pod is not found anywhere.
 klftn(){
   local ns=$(kubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
-  kubectl logs -f --tail=5000 -n "${ns:-default}" $1 | gsed 's/\\n/\n/g'
+  kubectl logs -f --tail=5000 -n "${ns:-default}" "$1" | gsed 's/\\n/\n/g'
 }
 
 pklftn() {
   local ns=$(prodkubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
-  prodkubectl logs -f --tail=5000 -n "${ns:-default}" $1 | gsed 's/\\n/\n/g'
+  prodkubectl logs -f --tail=5000 -n "${ns:-default}" "$1" | gsed 's/\\n/\n/g'
 }
+
+# Follow logs of every pod whose name matches a regex, in all namespaces, with
+# a pod/container prefix per line. New pods (e.g. after a deploy) are picked up.
+# Extra stern flags pass through:  ks sanbase-web -i error --since 5m --tail 200
+ks()  { stern -A --tail 50 "$@"; }
+pks() { stern --kubeconfig "$HOME/.kube/prod-config" -A --tail 50 "$@"; }
+
+# Pod-name completion for the pod helpers: Tab and `**<Tab>` list the pods
+# running right now (all namespaces). Prod helpers ask the prod cluster.
+_kpod_names()  { kubectl get pods -A --no-headers -o custom-columns=:metadata.name 2>/dev/null; }
+_pkpod_names() { kubectl --kubeconfig "$HOME/.kube/prod-config" get pods -A --no-headers -o custom-columns=:metadata.name 2>/dev/null; }
+_kpods()  { local -a pods; pods=(${(f)"$(_kpod_names)"});  compadd -a pods; }
+_pkpods() { local -a pods; pods=(${(f)"$(_pkpod_names)"}); compadd -a pods; }
+compdef _kpods  ksh klftn remote_console
+compdef _pkpods pksh pklftn premote_console
+_fzf_complete_ksh()             { _fzf_complete -- "$@" < <(_kpod_names); }
+_fzf_complete_klftn()           { _fzf_complete -- "$@" < <(_kpod_names); }
+_fzf_complete_remote_console()  { _fzf_complete -- "$@" < <(_kpod_names); }
+_fzf_complete_pksh()            { _fzf_complete -- "$@" < <(_pkpod_names); }
+_fzf_complete_pklftn()          { _fzf_complete -- "$@" < <(_pkpod_names); }
+_fzf_complete_premote_console() { _fzf_complete -- "$@" < <(_pkpod_names); }
 
 # Shell into a pod by name from ANY namespace (same namespace-resolution trick
 # as klftn). Prefers bash, falls back to sh for slim images without bash.
 ksh() {
   local ns=$(kubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
-  kubectl exec -it -n "${ns:-default}" $1 -- sh -c 'command -v bash >/dev/null && exec bash || exec sh'
+  kubectl exec -it -n "${ns:-default}" "$1" -- sh -c 'command -v bash >/dev/null && exec bash || exec sh'
 }
 
 pksh() {
   local ns=$(prodkubectl get pods -A --no-headers 2>/dev/null | awk -v p="$1" '$2==p{print $1; exit}')
-  prodkubectl exec -it -n "${ns:-default}" $1 -- sh -c 'command -v bash >/dev/null && exec bash || exec sh'
+  prodkubectl exec -it -n "${ns:-default}" "$1" -- sh -c 'command -v bash >/dev/null && exec bash || exec sh'
 }
 
 who_listens()
 {
-  lsof -nP -i4TCP:$1 | grep LISTEN
+  lsof -nP -i4TCP:"$1" | grep LISTEN
 }
 
 remote_console(){
-  kubectl exec -it $1 -- /app/bin/sanbase remote
+  kubectl exec -it "$1" -- /app/bin/sanbase remote
 }
 
 premote_console(){
-  prodkubectl exec -it $1 -- /app/bin/sanbase remote
+  prodkubectl exec -it "$1" -- /app/bin/sanbase remote
 }
 
 kubelogs() {
-  kubectl logs -f $1 > $2
+  kubectl logs -f "$1" > "$2"
 }
 
 alias ls='eza'
 alias ll='eza -lh --git'
 alias llt='eza -lhTL2 --git'
+alias lls='eza -lh --git -s size -r --total-size'   # biggest first; folders show their real size (slow on huge trees)
+alias lld='eza -lh --git -s modified -r'            # most recently modified first
 alias rfzf='rg --files | fzf'
 alias rfzfc='rg --files | fzf | pbcopy'
 
@@ -201,124 +337,25 @@ alias rfzfc='rg --files | fzf | pbcopy'
 alias watch='watch '
 alias kgpsw='watch "kubectl get pod | rg sanbase"'
 
-export GPG_TTY=$(tty)
+export GPG_TTY=$TTY
 
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# sync_work: commit everything, push, open a draft PR
+source "$HOME/config/zsh/sync_work.zsh"
 
-
-################# GIT SYNC FUNCTION
-
-sync_work() {
-    # Check if we're in a git repository
-    if ! git rev-parse --git-dir > /dev/null 2>&1; then
-        echo "❌ Error: Not in a git repository"
-        return 1
-    fi
-
-    # Get current branch name
-    current_branch=$(git branch --show-current)
-
-    # Check if we're on main or master branch
-    if [[ "$current_branch" == "main" || "$current_branch" == "master" ]]; then
-        echo "❌ Error: Cannot sync work on main/master branch"
-        echo "Please switch to a feature branch first:"
-        echo "  git checkout -b feature/your-branch-name"
-        return 1
-    fi
-
-    echo "🔄 Syncing work on branch: $current_branch"
-
-    # Check if there are any changes to commit
-    if git diff --quiet && git diff --cached --quiet; then
-        echo "ℹ️  No changes to commit"
-    else
-        # Add all files and commit
-        echo "📝 Adding and committing changes..."
-        git add .
-        git commit -m "synced ongoing work"
-
-        if [ $? -ne 0 ]; then
-            echo "❌ Failed to commit changes"
-            return 1
-        fi
-    fi
-
-    # Push the branch
-    echo "⬆️  Pushing to origin..."
-    git push -u origin "$current_branch"
-
-    if [ $? -ne 0 ]; then
-        echo "❌ Failed to push to origin"
-        return 1
-    fi
-
-    # Check if GitHub CLI is installed
-    if ! command -v gh &> /dev/null; then
-        echo "⚠️  GitHub CLI not installed. Cannot create PR automatically."
-        echo "Install with: brew install gh (macOS) or visit: https://cli.github.com/"
-        echo "✅ Branch synced successfully!"
-        return 0
-    fi
-
-    # Check if there's already a PR for this branch
-    echo "🔍 Checking for existing PR..."
-    existing_pr=$(gh pr list --head "$current_branch" --json number --jq '.[0].number' 2>/dev/null)
-
-    if [ -n "$existing_pr" ] && [ "$existing_pr" != "null" ]; then
-        echo "ℹ️  PR #$existing_pr already exists for this branch"
-        echo "🔗 View PR: $(gh pr view $existing_pr --json url --jq '.url')"
-    else
-        # Create a new PR
-        echo "🚀 Creating new PR..."
-
-        # Get the default branch (main or master)
-        default_branch=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
-
-        # Create PR with a basic template
-        pr_title="Work in progress: $current_branch"
-        pr_body="## Summary
-This PR contains ongoing work from the $current_branch branch.
-
-**Status:** 🚧 Work in Progress
-
-## Changes
-- Synced ongoing development work
-- Auto-created by sync_work function
-
----
-*This PR was automatically created. Please update the title and description as needed.*"
-
-        pr_url=$(gh pr create --title "$pr_title" --body "$pr_body" --base "$default_branch" --head "$current_branch" --draft 2>/dev/null)
-
-        if [ $? -eq 0 ]; then
-            echo "✅ Draft PR created: $pr_url"
-        else
-            echo "⚠️  Could not create PR automatically. You may need to:"
-            echo "   - Authenticate with GitHub CLI: gh auth login"
-            echo "   - Or create the PR manually on GitHub"
-        fi
-    fi
-
-    echo "✅ Sync completed successfully!"
-    echo "📊 Summary:"
-    echo "   Branch: $current_branch"
-    echo "   Status: Pushed to origin"
-    if [ -n "$existing_pr" ] && [ "$existing_pr" != "null" ]; then
-        echo "   PR: #$existing_pr (existing)"
-    elif [ -n "$pr_url" ]; then
-        echo "   PR: Created (draft)"
-    fi
-}
-################# END GIT SYNC FUNCTION
-
-# OpenClaw Completion
-source "/Users/ivanivanov/.openclaw/completions/openclaw.zsh"
-
-if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
+_cached_init -d "$HOME/.config/worktrunk/config.toml" wt config shell init zsh
 
 # direnv for per-directory environment activation
-eval "$(direnv hook zsh)"
+_cached_init direnv hook zsh
 
 # Developer supply chain security toolkit
-export PATH="/Users/ivanivanov/security/bin:$PATH"
+export PATH="$HOME/security/bin:$PATH"
 export CURL_CA_BUNDLE="$HOME/.config/certs/cert.pem"
+
+# Must stay last: it wraps every ZLE widget defined before it.
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+[[ -n $ZPROF ]] && zprof
+
+
+# Added by Antigravity CLI installer
+export PATH="/Users/ivanivanov/.local/bin:$PATH"

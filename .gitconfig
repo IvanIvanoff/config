@@ -18,7 +18,7 @@
   default = simple
 [alias]
   wl = worktree list 
-  fa = fetch -a
+  fa = fetch --all --prune
   b = branch --column
   ba = branch -a
   a = add
@@ -28,8 +28,8 @@
   s = status
   c = commit
   cm = commit -m
-  cmnv = commit -m --no-verify
-  cam = !sh -c 'git commit --amend --date=\"$(date -R)\"' -
+  cmnv = commit --no-verify -m
+  cam = commit --amend --date=now
   co = checkout
   com = checkout master
   cob = checkout -b
@@ -55,11 +55,11 @@
   dk = diff --check
   dn = diff --name-only
   rpo = remote prune origin
-  pr = pull-request
+  pr = !gh pr create
   rmg = remove-merged 
   # next 2 are taken from rado stankov
   remove-merged = !git branch --format '%(refname:short) %(upstream:track)' | awk '$2 == \"[gone]\" { print $1 }' | xargs -r git branch -D
-  sync = !git switch `git remote show origin | sed -n '/HEAD branch/s/.*: //p'` && git pull --prune && git delete-merged
+  sync = !git switch `git remote show origin | sed -n '/HEAD branch/s/.*: //p'` && git pull --prune && git remove-merged
 [commit]
 	gpgsign = true
 [web]
@@ -87,7 +87,7 @@
   changed = yellow bold
   untracked = red bold
 [help]
-  autocorrect = 1
+  autocorrect = prompt
 [gpg]
 	program = gpg
 [branch]
