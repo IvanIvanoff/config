@@ -328,6 +328,8 @@ kubelogs() {
 alias ls='eza'
 alias ll='eza -lh --git'
 alias llt='eza -lhTL2 --git'
+alias lls='eza -lh --git -s size -r --total-size'   # biggest first; folders show their real size (slow on huge trees)
+alias lld='eza -lh --git -s modified -r'            # most recently modified first
 alias rfzf='rg --files | fzf'
 alias rfzfc='rg --files | fzf | pbcopy'
 
@@ -353,3 +355,7 @@ export CURL_CA_BUNDLE="$HOME/.config/certs/cert.pem"
 source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 [[ -n $ZPROF ]] && zprof
+
+
+# Added by Antigravity CLI installer
+export PATH="/Users/ivanivanov/.local/bin:$PATH"
